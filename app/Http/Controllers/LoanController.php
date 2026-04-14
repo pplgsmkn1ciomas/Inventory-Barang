@@ -17,14 +17,16 @@ class LoanController extends Controller
     {
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $assets = Asset::query()
+            ->orderBy('category')
+            ->orderBy('brand')
+            ->orderBy('model')
+            ->get(['id', 'category', 'brand', 'model', 'serial_number', 'barcode', 'status', 'condition']);
+
         return view('admin.barcode.index', [
-            'assets' => Asset::query()
-                ->orderBy('category')
-                ->orderBy('brand')
-                ->orderBy('model')
-                ->get(['id', 'category', 'brand', 'model', 'serial_number', 'barcode', 'status', 'condition']),
+            'assets' => $assets,
         ]);
     }
 

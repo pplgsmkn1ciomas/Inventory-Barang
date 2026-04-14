@@ -62,11 +62,41 @@ start-server.bat test 8081
 
 ## Route Penting
 
-- `/` : public dashboard
-- `/admin/dashboard` : admin dashboard
-- `/admin/assets` : data barang
-- `/admin/users` : data pengguna
-- `/admin/loans` : transaksi peminjaman
+| Route | Keterangan |
+|---|---|
+| `/` | Public dashboard |
+| `/admin/dashboard` | Admin dashboard |
+| `/admin/assets` | Data barang |
+| `/admin/users` | Data pengguna |
+| `/admin/loans` | Transaksi peminjaman |
+| `/admin/loans?format=label107` | Cetak label barcode T&J No.107 |
+
+## Format Label Cetak — T&J No. 107
+
+Halaman cetak barcode aset diakses via `/admin/loans?format=label107`.
+
+### Spesifikasi Kertas Label T&J No. 107
+
+| Properti | Nilai |
+|---|---|
+| Merek | Tom & Jerry (T&J) |
+| Nomor seri kertas | No. 107 |
+| Warna kertas | Kuning |
+| Ukuran kertas induk | A4 (210 mm × 297 mm) |
+| Ukuran satu label | 50 mm (lebar) × 18 mm (tinggi) |
+| Susunan grid | 3 kolom × 10 baris |
+| Label per halaman | 30 label |
+| Margin kiri & kanan | 30 mm |
+| Margin atas & bawah | 58.5 mm |
+| Jarak antar label | 0 mm (tanpa gap) |
+| Isi per pak | 10 lembar = 300 label |
+
+### Isi Setiap Label
+
+- Kategori aset
+- Nama (Brand + Model)
+- Barcode batang (dari field `barcode`)
+- Status aset (warna-coded)
 
 ## Seed Default
 

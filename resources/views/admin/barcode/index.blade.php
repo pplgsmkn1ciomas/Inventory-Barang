@@ -83,6 +83,8 @@
         $selectedLabelKey = array_key_exists($printFormat, $labelVariants) ? $printFormat : 'label107';
         $selectedLabel = $labelVariants[$selectedLabelKey];
         $a4Pages = $assets->chunk($selectedGrid['per_page']);
+        $labelChunks = $assets->chunk(30);
+        $printDate = now()->locale('id')->translatedFormat('d F Y, H:i');
 
         $selectedAsset = $assets->first();
         $selectedBarcode = $selectedAsset ? (string) ($selectedAsset->barcode ?: $selectedAsset->serial_number) : '';
@@ -180,8 +182,112 @@
                         </div>
 
                         <div class="small text-muted">
-                            {{ $printFormat === 'a4' ? $selectedGrid['label'] . ' menampilkan ' . $selectedGrid['per_page'] . ' kartu per halaman dan mencetak semua aset yang tersedia.' : $selectedLabel['label'] . ' (' . $selectedLabel['dimensions'] . ') memakai kertas label T&J dan tetap satu kartu barcode.' }}
+                            @if($printFormat === 'a4')
+                                {{ $selectedGrid['label'] }} menampilkan {{ $selectedGrid['per_page'] }} kartu per halaman dan mencetak semua aset yang tersedia.
+                            @else
+                                {{ $selectedLabel['label'] }} ({{ $selectedLabel['dimensions'] }}) — Semua aset dicetak 30 label per halaman A4.
+                            @endif
                         </div>
+
+                        @if($printFormat !== 'a4')
+                        {{-- Dropdown info spesifikasi kertas label --}}
+                        <div>
+                            <div class="accordion accordion-flush" id="labelInfoAccordion">
+                                <div class="accordion-item border rounded">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed py-2 px-3 small fw-semibold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#labelInfoBody"
+                                                aria-expanded="false" aria-controls="labelInfoBody">
+                                            <i class="fa-solid fa-circle-info me-2 text-primary"></i>
+                                            Spesifikasi Kertas
+                                        </button>
+                                    </h2>
+                                    <div id="labelInfoBody" class="accordion-collapse collapse">
+                                        <div class="accordion-body py-2 px-3">
+                                            <table class="table table-sm table-borderless small mb-0">
+                                                <tbody>
+                                                    <tr><td class="text-muted ps-0 py-1">Merek</td><td class="fw-semibold">Tom &amp; Jerry (T&amp;J)</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Kertas induk</td><td class="fw-semibold">A4 (210×297 mm)</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Ukuran label</td><td class="fw-semibold">50 mm × 18 mm</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Susunan</td><td class="fw-semibold">3 kolom × 10 baris</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Label / hal</td><td class="fw-semibold">30 label</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Margin H/V</td><td class="fw-semibold">30 mm / 58.5 mm</td></tr>
+                                                    <tr><td class="text-muted ps-0 py-1">Isi per pak</td><td class="fw-semibold">10 lembar = 300 label</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($printFormat !== 'a4')
+                        {{-- Kalibrasi Posisi Cetak --}}
+                        <div id="labelCalibrationPanel">
+                            <div class="barcode-settings-label mt-1">
+                                <i class="fa-solid fa-sliders me-1"></i> Kalibrasi Posisi Cetak
+                            </div>
+
+                            {{-- Offset X --}}
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted">Geser Horizontal</span>
+                                    <span class="badge text-bg-secondary" id="calXDisplay">0 mm</span>
+                                </div>
+                                <input type="range" class="form-range" id="calOffsetX"
+                                       min="-15" max="15" step="0.5" value="0">
+                                <div class="d-flex gap-1 mt-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill cal-step-btn"
+                                            data-axis="x" data-dir="-1">
+                                        <i class="fa-solid fa-arrow-left"></i> Kiri
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill cal-step-btn"
+                                            data-axis="x" data-dir="1">
+                                        Kanan <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Offset Y --}}
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted">Geser Vertikal</span>
+                                    <span class="badge text-bg-secondary" id="calYDisplay">0 mm</span>
+                                </div>
+                                <input type="range" class="form-range" id="calOffsetY"
+                                       min="-15" max="15" step="0.5" value="0">
+                                <div class="d-flex gap-1 mt-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill cal-step-btn"
+                                            data-axis="y" data-dir="-1">
+                                        <i class="fa-solid fa-arrow-up"></i> Atas
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill cal-step-btn"
+                                            data-axis="y" data-dir="1">
+                                        Bawah <i class="fa-solid fa-arrow-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Skala --}}
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted">Skala Grid</span>
+                                    <span class="badge text-bg-secondary" id="calScaleDisplay">100%</span>
+                                </div>
+                                <input type="range" class="form-range" id="calScale"
+                                       min="90" max="110" step="0.5" value="100">
+                            </div>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" id="calResetBtn">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Reset Posisi
+                            </button>
+                            <div class="cal-hint mt-2">
+                                Penyesuaian berlaku di Preview <strong>dan</strong> saat Cetak/PDF.
+                                Gunakan langkah kecil 0.5 mm untuk akurasi tinggi.
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -249,31 +355,54 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <div
-                                        id="barcodePreviewSheet"
-                                        class="barcode-sheet barcode-sheet--label"
-                                        style="--barcode-label-sheet-width: {{ $selectedLabel['sheet_width'] }}; --barcode-label-sheet-height: {{ $selectedLabel['sheet_height'] }};"
-                                        data-barcode-page
-                                        data-page-index="0"
-                                    >
-                                        <div class="barcode-sheet-topbar"></div>
+                                    {{-- Full 30-label-per-page grid for label formats --}}
+                                    <div class="barcode-sheet-stack">
+                                        @foreach($labelChunks as $lblPageIndex => $lblPageAssets)
+                                            <div
+                                                class="barcode-sheet barcode-sheet--a4 barcode-label-sheet"
+                                                data-barcode-page
+                                                data-page-index="{{ $lblPageIndex }}"
+                                                data-page-total="{{ $labelChunks->count() }}"
+                                            >
+                                                <div class="barcode-sheet-topbar"></div>
+                                                <div class="barcode-sheet-header barcode-sheet-header--grid">
+                                                    <div>
+                                                        <div class="barcode-sheet-kicker">Inventory Barang</div>
+                                                        <h2 class="barcode-sheet-title">{{ $selectedLabel['label'] }}</h2>
+                                                        <div class="barcode-sheet-subtitle">A4 · 3×10 · {{ $lblPageAssets->count() }} label pada halaman ini</div>
+                                                    </div>
+                                                    <div class="barcode-sheet-page-chip">
+                                                        Hal {{ $lblPageIndex + 1 }}/{{ $labelChunks->count() }}
+                                                    </div>
+                                                </div>
 
-                                        <div class="barcode-sheet-header barcode-sheet-header--label">
-                                            <h2 class="barcode-sheet-title">{{ $selectedAsset->brand }} {{ $selectedAsset->model }}</h2>
-                                        </div>
-
-                                        <div class="barcode-sheet-barcode-zone">
-                                            <svg
-                                                id="barcodePreviewSvg"
-                                                class="barcode-preview-svg"
-                                                data-barcode-svg
-                                                data-barcode-value="{{ $selectedBarcode }}"
-                                                data-barcode-width="{{ $selectedLabel['barcode_width'] }}"
-                                                data-barcode-height="{{ $selectedLabel['barcode_height'] }}"
-                                                role="img"
-                                                aria-label="Barcode {{ $selectedBarcode }}"
-                                            ></svg>
-                                        </div>
+                                                <div class="barcode-label-grid">
+                                                    @foreach($lblPageAssets as $lblAsset)
+                                                        @php $lblBarcode = (string)($lblAsset->barcode ?: $lblAsset->serial_number); @endphp
+                                                        <div class="barcode-label-cell">
+                                                            <div class="barcode-label-category">{{ $lblAsset->category }}</div>
+                                                            <div class="barcode-label-name">{{ $lblAsset->brand }} {{ $lblAsset->model }}</div>
+                                                            <div class="barcode-label-barcode">
+                                                                <svg
+                                                                    class="barcode-label-svg"
+                                                                    data-barcode-svg
+                                                                    data-barcode-value="{{ $lblBarcode }}"
+                                                                    data-barcode-width="1"
+                                                                    data-barcode-height="26"
+                                                                    role="img"
+                                                                    aria-label="Barcode {{ $lblBarcode }}"
+                                                                ></svg>
+                                                            </div>
+                                                            <div class="barcode-label-date">Cetak: {{ $printDate }}</div>
+                                                            <div class="barcode-label-dept">Pengembangan Perangkat Lunak &amp; Gim</div>
+                                                        </div>
+                                                    @endforeach
+                                                    @for($i = $lblPageAssets->count(); $i < 30; $i++)
+                                                        <div class="barcode-label-cell barcode-label-cell--empty"></div>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 @endif
                             @else
@@ -545,6 +674,128 @@
         @media (max-width: 1199.98px) {
             .barcode-preview-stage {
                 min-height: 520px;
+            }
+        }
+
+        /* ── Calibration Panel ──────────────────────────────────── */
+        #labelCalibrationPanel {
+            padding-top: .25rem;
+            border-top: 1px dashed #d0dcea;
+            margin-top: .25rem;
+        }
+        .cal-hint {
+            font-size: .68rem;
+            color: #6d7f9d;
+            line-height: 1.35;
+        }
+        #calOffsetX, #calOffsetY, #calScale {
+            accent-color: #0d6efd;
+        }
+
+        /* ── Label 107 / 103 grid ───────────────────────────────── */
+        .barcode-label-sheet {
+            /* screen: add inner padding so the grid has breathing room */
+            padding-left: 8mm !important;
+            padding-right: 8mm !important;
+        }
+
+        .barcode-label-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 50mm);
+            grid-template-rows: repeat(10, 18mm);
+            width: 150mm;
+            height: 180mm;
+            gap: 0;
+            margin: 0 auto;
+        }
+
+        .barcode-label-cell {
+            width: 50mm;
+            height: 18mm;
+            border: 0.3px solid #bbb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1mm 1.5mm;
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .barcode-label-cell--empty::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent, transparent 4px,
+                rgba(0,0,0,.03) 4px, rgba(0,0,0,.03) 5px
+            );
+        }
+
+        .barcode-label-category {
+            font-size: 5pt;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+        }
+        .barcode-label-name {
+            font-size: 7pt;
+            font-weight: 700;
+            color: #111;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+        .barcode-label-barcode {
+            display: block;
+            width: 100%;
+            height: 7mm;
+            margin: 1mm 0;
+            overflow: hidden;
+        }
+        .barcode-label-svg {
+            width: 100% !important;
+            height: 7mm !important;
+            display: block;
+        }
+        .barcode-label-date {
+            font-size: 4.5pt;
+            color: #555;
+            letter-spacing: .1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+        .barcode-label-dept {
+            font-size: 4.5pt;
+            font-weight: 700;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        /* ── Print rules for label format ───────────────────────── */
+        @media print {
+            .barcode-label-sheet {
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 58.5mm 30mm !important;
+            }
+            .barcode-label-grid {
+                margin: 0 !important;
+                width: 150mm !important;
+                height: 180mm !important;
             }
         }
     </style>
@@ -824,6 +1075,96 @@
                     openPrintWindow();
                 });
             }
+
+            /* ── Kalibrasi Posisi Cetak ─────────────────────────── */
+            (function () {
+                var calOffsetX   = document.getElementById('calOffsetX');
+                var calOffsetY   = document.getElementById('calOffsetY');
+                var calScale     = document.getElementById('calScale');
+                var calXDisplay  = document.getElementById('calXDisplay');
+                var calYDisplay  = document.getElementById('calYDisplay');
+                var calScaleDisp = document.getElementById('calScaleDisplay');
+                var calResetBtn  = document.getElementById('calResetBtn');
+                var stepBtns     = document.querySelectorAll('.cal-step-btn');
+
+                if (!calOffsetX || !calOffsetY || !calScale) return; // not a label format
+
+                /* Inject a dynamic <style> tag that carries the transform into @media print */
+                var calPrintStyle = document.createElement('style');
+                calPrintStyle.id  = 'calPrintStyle';
+                document.head.appendChild(calPrintStyle);
+
+                var applyCalibration = function () {
+                    var x     = parseFloat(calOffsetX.value);
+                    var y     = parseFloat(calOffsetY.value);
+                    var scale = parseFloat(calScale.value) / 100;
+
+                    /* Format display badges */
+                    calXDisplay.textContent  = (x >= 0 ? '+' : '') + x.toFixed(1) + ' mm';
+                    calYDisplay.textContent  = (y >= 0 ? '+' : '') + y.toFixed(1) + ' mm';
+                    calScaleDisp.textContent = (scale * 100).toFixed(1) + '%';
+
+                    /* Colour badge based on offset direction */
+                    calXDisplay.className  = 'badge ' + (x !== 0 ? 'text-bg-primary' : 'text-bg-secondary');
+                    calYDisplay.className  = 'badge ' + (y !== 0 ? 'text-bg-primary' : 'text-bg-secondary');
+                    calScaleDisp.className = 'badge ' + (scale !== 1 ? 'text-bg-warning text-dark' : 'text-bg-secondary');
+
+                    var transformVal = 'translate(' + x + 'mm, ' + y + 'mm) scale(' + scale + ')';
+
+                    /* Apply to all label grids on screen */
+                    document.querySelectorAll('.barcode-label-grid').forEach(function (grid) {
+                        grid.style.transform       = transformVal;
+                        grid.style.transformOrigin = 'top left';
+                    });
+
+                    /* Inject print CSS (overrides default margin:0 auto) */
+                    calPrintStyle.textContent =
+                        '@media print {' +
+                        '  .barcode-label-grid {' +
+                        '    transform: translate(' + x + 'mm, ' + y + 'mm) scale(' + scale + ') !important;' +
+                        '    transform-origin: top left !important;' +
+                        '    margin: 0 !important;' +
+                        '  }' +
+                        '}';
+                };
+
+                /* Slider input events */
+                calOffsetX.addEventListener('input', applyCalibration);
+                calOffsetY.addEventListener('input', applyCalibration);
+                calScale.addEventListener('input', applyCalibration);
+
+                /* Step buttons: nudge by 0.5 mm */
+                stepBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var axis = btn.dataset.axis;
+                        var dir  = parseFloat(btn.dataset.dir);
+                        var step = 0.5;
+
+                        if (axis === 'x') {
+                            var newX = Math.max(-15, Math.min(15, parseFloat(calOffsetX.value) + dir * step));
+                            calOffsetX.value = newX;
+                        } else {
+                            var newY = Math.max(-15, Math.min(15, parseFloat(calOffsetY.value) + dir * step));
+                            calOffsetY.value = newY;
+                        }
+                        applyCalibration();
+                    });
+                });
+
+                /* Reset */
+                if (calResetBtn) {
+                    calResetBtn.addEventListener('click', function () {
+                        calOffsetX.value = '0';
+                        calOffsetY.value = '0';
+                        calScale.value   = '100';
+                        applyCalibration();
+                    });
+                }
+
+                /* Run once on load */
+                applyCalibration();
+            })();
+
         });
     </script>
 @endpush

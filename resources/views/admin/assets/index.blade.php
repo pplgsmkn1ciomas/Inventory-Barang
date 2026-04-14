@@ -260,10 +260,28 @@
 
                                     <div class="col-12">
                                         <label class="form-label">Barcode (opsional)</label>
-                                        <input type="text" name="barcode" class="form-control @error('barcode') is-invalid @enderror" value="{{ $editBarcode }}">
+                                        <input
+                                            type="text"
+                                            name="barcode"
+                                            id="editAssetBarcode{{ $asset->id }}"
+                                            class="form-control @error('barcode') is-invalid @enderror"
+                                            value="{{ $editBarcode }}"
+                                        >
                                         @error('barcode')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+
+                                        <div class="asset-barcode-preview-panel mt-2 is-empty"
+                                             id="editAssetBarcodePreviewPanel{{ $asset->id }}">
+                                            <div class="asset-barcode-preview-title">Panel Review Barcode (Live)</div>
+                                            <svg id="editAssetBarcodePreviewSvg{{ $asset->id }}"
+                                                 class="asset-barcode-preview-svg"
+                                                 role="img"
+                                                 aria-label="Preview barcode"></svg>
+                                            <div id="editAssetBarcodePreviewText{{ $asset->id }}"
+                                                 class="asset-barcode-preview-text">Belum ada data barcode</div>
+                                            <div class="asset-barcode-preview-hint">Barcode mengikuti input Barcode, atau Serial Number jika barcode kosong.</div>
+                                        </div>
                                     </div>
 
                                     <div class="col-12">
@@ -944,6 +962,55 @@
             if (createAssetModalElement) {
                 createAssetModalElement.addEventListener('shown.bs.modal', updateCreateAssetBarcodePreview);
             }
+
+            // ── Edit modal barcode preview (one per asset) ─────────
+            document.querySelectorAll('[id^="editAssetModal"]').forEach(function (modalEl) {
+                var assetId = modalEl.id.replace('editAssetModal', '');
+                var editSerialInput  = document.getElementById('editAssetBarcode' + assetId)
+                                      ? null
+                                      : null; // serial not needed — barcode input has its own id
+                var editBarcodeInput = document.getElementById('editAssetBarcode'  + assetId);
+                var editPreviewPanel = document.getElementById('editAssetBarcodePreviewPanel' + assetId);
+                var editPreviewSvg   = document.getElementById('editAssetBarcodePreviewSvg'   + assetId);
+                var editPreviewText  = document.getElementById('editAssetBarcodePreviewText'  + assetId);
+
+                // Find the serial_number input inside this modal
+                var editSerialInput  = modalEl.querySelector('input[name="serial_number"]');
+
+                if (!editPreviewPanel || !editPreviewSvg || !editPreviewText) {
+                    return;
+                }
+
+                var updateEditPreview = function () {
+                    var barcodeVal = editBarcodeInput ? editBarcodeInput.value.trim() : '';
+                    var serialVal  = editSerialInput  ? editSerialInput.value.trim()  : '';
+                    var previewVal = barcodeVal || serialVal;
+
+                    var rendered = renderBarcodeToSvg(editPreviewSvg, previewVal, {
+                        height: 56,
+                        width: 1.35,
+                        lineColor: '#163d73'
+                    });
+
+                    if (rendered) {
+                        editPreviewPanel.classList.remove('is-empty');
+                        editPreviewText.textContent = previewVal;
+                    } else {
+                        editPreviewPanel.classList.add('is-empty');
+                        editPreviewText.textContent = previewVal ? 'Format barcode tidak valid.' : 'Belum ada data barcode';
+                    }
+                };
+
+                if (editBarcodeInput) {
+                    editBarcodeInput.addEventListener('input', updateEditPreview);
+                }
+                if (editSerialInput) {
+                    editSerialInput.addEventListener('input', updateEditPreview);
+                }
+
+                // Render saat modal terbuka
+                modalEl.addEventListener('shown.bs.modal', updateEditPreview);
+            });
 
             updateCreateAssetBarcodePreview();
 
