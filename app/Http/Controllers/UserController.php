@@ -53,7 +53,7 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['admin', 'teacher', 'student'])],
             'kelas' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:160', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['required', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
             'password' => ['nullable', 'string', 'min:8'],
         ]);
@@ -78,7 +78,7 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['admin', 'teacher', 'student'])],
             'kelas' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:160', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['required', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
             'password' => ['nullable', 'string', 'min:8'],
         ]);

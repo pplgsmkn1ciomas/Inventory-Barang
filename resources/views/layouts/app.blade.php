@@ -242,8 +242,8 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link admin-nav-link {{ request()->routeIs('admin.loans.*') ? 'active' : '' }}" href="{{ route('admin.loans.index') }}">
-                            <i class="fa-solid fa-right-left"></i>
-                            <span>Peminjaman</span>
+                            <i class="fa-solid fa-barcode"></i>
+                            <span>Barcode</span>
                         </a>
                     </li>
                 </ul>

@@ -11,20 +11,20 @@
     <div class="row g-3">
         <div class="col-lg-4">
             <div class="card">
-                <div class="card-header bg-white fw-semibold">Tambah Pengguna</div>
+                <div class="card-header bg-primary text-white fw-semibold">Tambah Pengguna</div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('admin.users.store') }}" class="row g-2">
                         @csrf
                         <div class="col-12">
-                            <label class="form-label">Nama</label>
+                            <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Identity Number</label>
+                            <label class="form-label">NISN</label>
                             <input type="text" name="identity_number" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Role</label>
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
                             <select name="role" class="form-select" required>
                                 <option value="student">student</option>
                                 <option value="teacher">teacher</option>
@@ -32,7 +32,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Kelas</label>
+                            <label class="form-label">Kelas <span class="text-danger">*</span></label>
                             <input type="text" name="kelas" class="form-control" value="-" required>
                         </div>
                         <div class="col-12">
@@ -40,12 +40,8 @@
                             <input type="email" name="email" class="form-control">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">No. HP</label>
-                            <input type="text" name="phone" class="form-control">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Password (opsional)</label>
-                            <input type="password" name="password" class="form-control">
+                            <label class="form-label">No. HP <span class="text-danger">*</span></label>
+                            <input type="text" name="phone" class="form-control" required>
                         </div>
                         <div class="col-12 d-grid">
                             <button type="submit" class="btn btn-primary">Simpan Pengguna</button>

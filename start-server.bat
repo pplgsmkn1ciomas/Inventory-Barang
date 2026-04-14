@@ -43,6 +43,26 @@ echo Mode: %MODE%
 echo URL: http://%HOST%:%PORT%
 echo.
 
+echo Menyiapkan database...
+php artisan migrate --force
+if errorlevel 1 (
+  color 0C
+  echo Migrasi database gagal.
+  pause
+  exit /b 1
+)
+
+php artisan db:seed --force
+if errorlevel 1 (
+  color 0C
+  echo Seeding database gagal.
+  pause
+  exit /b 1
+)
+
+echo Database siap.
+echo.
+
 start http://%HOST%:%PORT%
 php artisan serve --host=%HOST% --port=%PORT%
 pause

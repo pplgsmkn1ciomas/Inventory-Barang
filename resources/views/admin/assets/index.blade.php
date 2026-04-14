@@ -342,37 +342,41 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label">Merk</label>
-                                <select
-                                    name="brand"
-                                    class="form-select @error('brand') is-invalid @enderror"
-                                    required
-                                >
-                                    <option value="">Pilih merk</option>
-                                    @if(old('brand') && !$allBrands->contains(old('brand')))
-                                        <option value="{{ old('brand') }}" selected>{{ old('brand') }}</option>
-                                    @endif
-                                    @foreach($allBrands as $brand)
-                                        <option value="{{ $brand }}" @selected(old('brand') === $brand)>{{ $brand }}</option>
-                                    @endforeach
-                                </select>
-                                @error('brand')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Merk</label>
+                                        <select
+                                            name="brand"
+                                            class="form-select @error('brand') is-invalid @enderror"
+                                            required
+                                        >
+                                            <option value="">Pilih merk</option>
+                                            @if(old('brand') && !$allBrands->contains(old('brand')))
+                                                <option value="{{ old('brand') }}" selected>{{ old('brand') }}</option>
+                                            @endif
+                                            @foreach($allBrands as $brand)
+                                                <option value="{{ $brand }}" @selected(old('brand') === $brand)>{{ $brand }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('brand')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                            <div class="col-12">
-                                <label class="form-label">Model</label>
-                                <input
-                                    type="text"
-                                    name="model"
-                                    class="form-control @error('model') is-invalid @enderror"
-                                    value="{{ old('model') }}"
-                                    required
-                                >
-                                @error('model')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Model</label>
+                                        <input
+                                            type="text"
+                                            name="model"
+                                            class="form-control @error('model') is-invalid @enderror"
+                                            value="{{ old('model') }}"
+                                            required
+                                        >
+                                        @error('model')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-12">
@@ -412,27 +416,31 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label">Status</label>
-                                <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                                    @foreach(['available', 'borrowed', 'maintenance'] as $status)
-                                        <option value="{{ $status }}" @selected(old('status', 'available') === $status)>{{ ucfirst($status) }}</option>
-                                    @endforeach
-                                </select>
-                                @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Status</label>
+                                        <select name="status" class="form-select @error('status') is-invalid @enderror" required>
+                                            @foreach(['available', 'borrowed', 'maintenance'] as $status)
+                                                <option value="{{ $status }}" @selected(old('status', 'available') === $status)>{{ ucfirst($status) }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('status')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                            <div class="col-12">
-                                <label class="form-label">Kondisi</label>
-                                <select name="condition" class="form-select @error('condition') is-invalid @enderror" required>
-                                    @foreach(['good', 'minor_damage', 'major_damage', 'under_repair'] as $condition)
-                                        <option value="{{ $condition }}" @selected(old('condition', 'good') === $condition)>{{ ucwords(str_replace('_', ' ', $condition)) }}</option>
-                                    @endforeach
-                                </select>
-                                @error('condition')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Kondisi</label>
+                                        <select name="condition" class="form-select @error('condition') is-invalid @enderror" required>
+                                            @foreach(['good', 'minor_damage', 'major_damage', 'under_repair'] as $condition)
+                                                <option value="{{ $condition }}" @selected(old('condition', 'good') === $condition)>{{ ucwords(str_replace('_', ' ', $condition)) }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('condition')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

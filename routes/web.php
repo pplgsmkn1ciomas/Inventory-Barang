@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'publicIndex'])->name('dashboard.public');
 
+Route::get('/admin/login', [DashboardController::class, 'showAdminLogin'])->name('admin.login.form');
 Route::post('/admin/login', [DashboardController::class, 'loginAdmin'])->name('admin.login');
 Route::post('/admin/logout', [DashboardController::class, 'logoutAdmin'])->middleware('admin.access')->name('admin.logout');
 Route::get('/admin/dashboard', [DashboardController::class, 'adminIndex'])->middleware('admin.access')->name('dashboard.admin');

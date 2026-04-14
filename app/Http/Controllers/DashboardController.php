@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Hash;
 
 class DashboardController extends Controller
 {
+    public function showAdminLogin(): RedirectResponse
+    {
+        return redirect()
+            ->route('dashboard.public')
+            ->with('show_admin_login', true);
+    }
+
     public function publicIndex(): View
     {
         $availableAssets = Asset::query()

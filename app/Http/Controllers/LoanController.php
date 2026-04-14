@@ -19,19 +19,12 @@ class LoanController extends Controller
 
     public function index()
     {
-        $activeLoans = Loan::query()
-            ->with([
-                'user:id,name,identity_number,kelas,phone,role',
-                'asset:id,brand,model,serial_number,status',
-            ])
-            ->whereIn('status', ['active', 'overdue'])
-            ->latest('loan_date')
-            ->paginate(20);
-
-        return view('admin.loans.index', [
-            'activeLoans' => $activeLoans,
-            'users' => User::query()->orderBy('name')->get(['id', 'name', 'identity_number', 'role']),
-            'assets' => Asset::query()->orderBy('brand')->orderBy('model')->get(['id', 'brand', 'model', 'serial_number', 'status']),
+        return view('admin.barcode.index', [
+            'assets' => Asset::query()
+                ->orderBy('category')
+                ->orderBy('brand')
+                ->orderBy('model')
+                ->get(['id', 'category', 'brand', 'model', 'serial_number', 'barcode', 'status', 'condition']),
         ]);
     }
 
