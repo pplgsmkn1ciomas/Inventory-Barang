@@ -99,6 +99,10 @@ class SettingController extends Controller
             'statuses.*' => ['nullable', 'string', 'max:120'],
             'conditions' => ['required', 'array', 'min:1'],
             'conditions.*' => ['nullable', 'string', 'max:120'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['nullable', 'string', 'max:120'],
+            'classes' => ['required', 'array', 'min:1'],
+            'classes.*' => ['nullable', 'string', 'max:120'],
         ]);
 
         $normalizedOptions = [
@@ -106,6 +110,8 @@ class SettingController extends Controller
             'brands' => $this->normalizeOptionItems($validated['brands']),
             'statuses' => $this->normalizeOptionItems($validated['statuses']),
             'conditions' => $this->normalizeOptionItems($validated['conditions']),
+            'roles' => $this->normalizeOptionItems($validated['roles']),
+            'classes' => $this->normalizeOptionItems($validated['classes']),
         ];
 
         $fieldLabels = [
@@ -113,6 +119,8 @@ class SettingController extends Controller
             'brands' => 'merk',
             'statuses' => 'status',
             'conditions' => 'kondisi',
+            'roles' => 'role',
+            'classes' => 'kelas',
         ];
 
         foreach ($normalizedOptions as $field => $values) {
@@ -125,10 +133,22 @@ class SettingController extends Controller
             }
         }
 
+        $containsAdminRole = collect($normalizedOptions['roles'])->contains(
+            static fn (string $role): bool => Str::lower($role) === 'admin'
+        );
+
+        if (!$containsAdminRole) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'roles' => 'Opsi role wajib mengandung "admin" agar akses admin tetap tersedia.',
+                ]);
+        }
+
         $this->assetOptionService->saveOptions($normalizedOptions);
 
         return redirect()->route('admin.settings.index', ['tab' => 'menu-a'])
-            ->with('success', 'Master data barang berhasil diperbarui.');
+            ->with('success', 'Master data barang dan pengguna berhasil diperbarui.');
     }
 
     public function updateMenuB(Request $request): RedirectResponse

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Exports\UsersExport;
 use App\Imports\UsersImport;
 use App\Models\User;
+use App\Services\AssetOptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -15,6 +17,11 @@ use Throwable;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly AssetOptionService $assetOptionService,
+    ) {
+    }
+
     public function index(Request $request)
     {
         $query = User::query();
@@ -38,10 +45,13 @@ class UserController extends Controller
         }
 
         $users = $query->latest('id')->paginate(20)->withQueryString();
+        $roleOptions = collect($this->resolveRoleOptions());
+        $kelasOptions = collect($this->resolveKelasOptions());
 
         return view('admin.users.index', [
             'users' => $users,
-            'kelasOptions' => User::query()->select('kelas')->distinct()->orderBy('kelas')->pluck('kelas'),
+            'roleOptions' => $roleOptions,
+            'kelasOptions' => $kelasOptions,
             'filters' => [
                 'search' => (string) $request->input('search', ''),
                 'role' => (string) $request->input('role', ''),
@@ -69,7 +79,7 @@ class UserController extends Controller
             'excel_file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
         ]);
 
-        $import = new UsersImport();
+        $import = new UsersImport($this->resolveRoleOptions(), $this->resolveKelasOptions());
 
         try {
             Excel::import($import, $validated['excel_file']);
@@ -88,11 +98,14 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $roleOptions = $this->resolveRoleOptions();
+        $kelasOptions = $this->resolveKelasOptions();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'identity_number' => ['required', 'string', 'max:120', 'unique:users,identity_number'],
-            'role' => ['required', Rule::in(['admin', 'teacher', 'student'])],
-            'kelas' => ['required', 'string', 'max:120'],
+            'role' => ['required', 'string', 'max:120', Rule::in($roleOptions)],
+            'kelas' => ['required', 'string', 'max:120', Rule::in($kelasOptions)],
             'email' => ['nullable', 'email', 'max:160', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
@@ -113,11 +126,14 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $roleOptions = $this->resolveRoleOptions([(string) $user->role]);
+        $kelasOptions = $this->resolveKelasOptions([(string) $user->kelas]);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'identity_number' => ['required', 'string', 'max:120', Rule::unique('users', 'identity_number')->ignore($user->id)],
-            'role' => ['required', Rule::in(['admin', 'teacher', 'student'])],
-            'kelas' => ['required', 'string', 'max:120'],
+            'role' => ['required', 'string', 'max:120', Rule::in($roleOptions)],
+            'kelas' => ['required', 'string', 'max:120', Rule::in($kelasOptions)],
             'email' => ['nullable', 'email', 'max:160', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],
@@ -146,5 +162,77 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus.');
+    }
+
+    /**
+     * @param list<string> $extraValues
+     * @return list<string>
+     */
+    private function resolveRoleOptions(array $extraValues = []): array
+    {
+        $optionValues = $this->assetOptionService->getOptions();
+
+        return $this->mergeOptionValues(
+            $optionValues['roles'] ?? [],
+            array_merge(
+                User::query()
+                    ->whereNotNull('role')
+                    ->where('role', '!=', '')
+                    ->pluck('role')
+                    ->all(),
+                $extraValues,
+            ),
+        );
+    }
+
+    /**
+     * @param list<string> $extraValues
+     * @return list<string>
+     */
+    private function resolveKelasOptions(array $extraValues = []): array
+    {
+        $optionValues = $this->assetOptionService->getOptions();
+
+        return $this->mergeOptionValues(
+            $optionValues['classes'] ?? [],
+            array_merge(
+                User::query()
+                    ->whereNotNull('kelas')
+                    ->where('kelas', '!=', '')
+                    ->pluck('kelas')
+                    ->all(),
+                $extraValues,
+            ),
+        );
+    }
+
+    /**
+     * @param list<string> $defaultValues
+     * @param list<string> $extraValues
+     * @return list<string>
+     */
+    private function mergeOptionValues(array $defaultValues, array $extraValues): array
+    {
+        $merged = [];
+        $seen = [];
+
+        foreach (array_merge($defaultValues, $extraValues) as $value) {
+            $clean = trim((string) $value);
+
+            if ($clean === '') {
+                continue;
+            }
+
+            $dedupeKey = Str::lower($clean);
+
+            if (isset($seen[$dedupeKey])) {
+                continue;
+            }
+
+            $seen[$dedupeKey] = true;
+            $merged[] = $clean;
+        }
+
+        return $merged;
     }
 }

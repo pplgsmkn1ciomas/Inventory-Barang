@@ -19,6 +19,26 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithCalculatedFormula
 
     private int $skippedCount = 0;
 
+    /**
+     * @var array<string, string>
+     */
+    private array $allowedRoleLookup = [];
+
+    /**
+     * @var array<string, string>
+     */
+    private array $allowedClassLookup = [];
+
+    /**
+     * @param list<string> $allowedRoles
+     * @param list<string> $allowedClasses
+     */
+    public function __construct(array $allowedRoles = ['admin', 'teacher', 'student'], array $allowedClasses = ['-'])
+    {
+        $this->setAllowedRoles($allowedRoles);
+        $this->setAllowedClasses($allowedClasses);
+    }
+
     public function collection(Collection $rows): void
     {
         foreach ($rows as $row) {
@@ -26,7 +46,7 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithCalculatedFormula
 
             $identityNumber = $this->readValue($rowData, ['identity', 'identity_number']);
             $name = $this->readValue($rowData, ['nama', 'name']);
-            $kelas = $this->readValue($rowData, ['kelas']);
+            $kelas = $this->normalizeClass($this->readValue($rowData, ['kelas']));
             $phone = $this->readValue($rowData, ['no_hp', 'phone', 'nohp']);
             $role = $this->normalizeRole($this->readValue($rowData, ['role']));
 
@@ -129,8 +149,67 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithCalculatedFormula
     {
         $normalized = Str::lower(trim($value));
 
-        return in_array($normalized, ['admin', 'teacher', 'student'], true)
-            ? $normalized
-            : '';
+        return $this->allowedRoleLookup[$normalized] ?? '';
+    }
+
+    /**
+     * @param list<string> $allowedRoles
+     */
+    private function setAllowedRoles(array $allowedRoles): void
+    {
+        $lookup = [];
+
+        foreach ($allowedRoles as $role) {
+            $cleanRole = trim((string) $role);
+
+            if ($cleanRole === '') {
+                continue;
+            }
+
+            $lookup[Str::lower($cleanRole)] = Str::limit($cleanRole, 120, '');
+        }
+
+        if ($lookup === []) {
+            $lookup = [
+                'admin' => 'admin',
+                'teacher' => 'teacher',
+                'student' => 'student',
+            ];
+        }
+
+        $this->allowedRoleLookup = $lookup;
+    }
+
+    private function normalizeClass(string $value): string
+    {
+        $normalized = Str::lower(trim($value));
+
+        return $this->allowedClassLookup[$normalized] ?? '';
+    }
+
+    /**
+     * @param list<string> $allowedClasses
+     */
+    private function setAllowedClasses(array $allowedClasses): void
+    {
+        $lookup = [];
+
+        foreach ($allowedClasses as $class) {
+            $cleanClass = trim((string) $class);
+
+            if ($cleanClass === '') {
+                continue;
+            }
+
+            $lookup[Str::lower($cleanClass)] = Str::limit($cleanClass, 120, '');
+        }
+
+        if ($lookup === []) {
+            $lookup = [
+                '-' => '-',
+            ];
+        }
+
+        $this->allowedClassLookup = $lookup;
     }
 }

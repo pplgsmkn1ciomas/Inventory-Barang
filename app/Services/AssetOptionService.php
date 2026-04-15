@@ -15,6 +15,8 @@ class AssetOptionService
         'brands' => 'asset_brands',
         'statuses' => 'asset_statuses',
         'conditions' => 'asset_conditions',
+        'roles' => 'user_roles',
+        'classes' => 'user_classes',
     ];
 
     /**
@@ -25,6 +27,8 @@ class AssetOptionService
         'brands' => ['Lenovo', 'Dell', 'Epson', 'Canon', 'Logitech'],
         'statuses' => ['available', 'borrowed', 'maintenance', 'lost'],
         'conditions' => ['good', 'minor_damage', 'major_damage', 'under_repair'],
+        'roles' => ['admin', 'teacher', 'student'],
+        'classes' => ['-', '10 PPLG 1', '10 PPLG 2', '11 PPLG 1', '11 PPLG 2'],
     ];
 
     /**

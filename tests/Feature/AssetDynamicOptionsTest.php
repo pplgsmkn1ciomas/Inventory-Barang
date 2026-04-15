@@ -29,6 +29,8 @@ class AssetDynamicOptionsTest extends TestCase
             'brands' => ['Lenovo', 'Acer'],
             'statuses' => ['available', 'retired'],
             'conditions' => ['good', 'needs_review'],
+            'roles' => ['admin', 'teacher', 'student'],
+            'classes' => ['-', '10 PPLG 1'],
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-a']));
 
         $this->withSession($sessionPayload)->post(route('admin.assets.store'), [

@@ -26,7 +26,7 @@ class SettingsPageTest extends TestCase
             ->assertOk()
             ->assertSee('Pengaturan')
             ->assertSee('Running Teks')
-            ->assertSee('Master Data Barang')
+            ->assertSee('Master Data Sistem')
             ->assertSee('Menu B')
             ->assertSee('Menu C');
     }
@@ -135,6 +135,8 @@ class SettingsPageTest extends TestCase
         $brands = ['Lenovo', 'Acer', 'Asus'];
         $statuses = ['available', 'borrowed', 'retired'];
         $conditions = ['good', 'minor_damage', 'needs_review'];
+        $roles = ['admin', 'teacher', 'student', 'staff'];
+        $classes = ['-', '10 PPLG 1', '11 TKJ 1'];
 
         $this->withSession([
             'admin_access' => [
@@ -147,6 +149,8 @@ class SettingsPageTest extends TestCase
             'brands' => $brands,
             'statuses' => $statuses,
             'conditions' => $conditions,
+            'roles' => $roles,
+            'classes' => $classes,
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-a']));
 
         $this->assertDatabaseHas('settings', [
@@ -169,6 +173,16 @@ class SettingsPageTest extends TestCase
             'setting_value' => json_encode($conditions),
         ]);
 
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'user_roles',
+            'setting_value' => json_encode($roles),
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'user_classes',
+            'setting_value' => json_encode($classes),
+        ]);
+
         $this->withSession([
             'admin_access' => [
                 'user_id' => $admin->id,
@@ -181,6 +195,17 @@ class SettingsPageTest extends TestCase
             ->assertSee('Acer')
             ->assertSee('Retired')
             ->assertSee('Needs Review');
+
+        $this->withSession([
+            'admin_access' => [
+                'user_id' => $admin->id,
+                'user_name' => $admin->name,
+                'granted_at' => now()->getTimestamp(),
+            ],
+        ])->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('staff')
+            ->assertSee('11 TKJ 1');
     }
 
     public function test_admin_can_update_menu_b_header_settings(): void

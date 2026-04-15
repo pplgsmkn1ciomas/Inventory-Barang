@@ -20,6 +20,8 @@
             'brands' => ['label' => 'Merk', 'placeholder' => 'Contoh: Lenovo'],
             'statuses' => ['label' => 'Status', 'placeholder' => 'Contoh: available'],
             'conditions' => ['label' => 'Kondisi', 'placeholder' => 'Contoh: good'],
+            'roles' => ['label' => 'Role', 'placeholder' => 'Contoh: student'],
+            'classes' => ['label' => 'Kelas', 'placeholder' => 'Contoh: 10 PPLG 1'],
         ];
         $menuAOptionValues = [];
 
@@ -48,7 +50,7 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {{ $activeTab === 'menu-a' ? 'active' : '' }}" id="tab-menu-a-link" data-bs-toggle="tab" data-bs-target="#tab-menu-a" type="button" role="tab" aria-controls="tab-menu-a" aria-selected="{{ $activeTab === 'menu-a' ? 'true' : 'false' }}">
-                        Master Data Barang
+                        Master Data Sistem
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -174,7 +176,7 @@
                         @method('PUT')
                         <div class="col-12">
                             <div class="alert alert-info border mb-0">
-                                Kelola opsi dropdown untuk menu Data Barang. Perubahan kategori, merk, status, dan kondisi akan langsung sinkron ke filter, form tambah, dan form edit barang.
+                                Kelola opsi dropdown untuk menu Data Barang dan Data Pengguna. Perubahan kategori, merk, status, kondisi, role, dan kelas akan langsung sinkron ke fitur filter, form tambah, dan form edit.
                             </div>
                         </div>
 
@@ -222,7 +224,7 @@
 
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fa-solid fa-floppy-disk me-2"></i>Simpan Master Data Barang
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Simpan Master Data
                             </button>
                         </div>
                     </form>

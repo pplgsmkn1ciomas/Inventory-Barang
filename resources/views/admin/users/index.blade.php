@@ -37,14 +37,18 @@
                         <div class="col-md-6">
                             <label class="form-label">Role <span class="text-danger">*</span></label>
                             <select name="role" class="form-select" required>
-                                <option value="student">student</option>
-                                <option value="teacher">teacher</option>
-                                <option value="admin">admin</option>
+                                @foreach($roleOptions as $roleOption)
+                                    <option value="{{ $roleOption }}" @selected(old('role', 'student') === $roleOption)>{{ $roleOption }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Kelas <span class="text-danger">*</span></label>
-                            <input type="text" name="kelas" class="form-control" value="-" required>
+                            <select name="kelas" class="form-select" required>
+                                @foreach($kelasOptions as $kelasOption)
+                                    <option value="{{ $kelasOption }}" @selected(old('kelas', '-') === $kelasOption)>{{ $kelasOption }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label">No. HP <span class="text-danger">*</span></label>
@@ -68,7 +72,7 @@
                         <div class="col-md-3">
                             <select class="form-select" name="role">
                                 <option value="">Semua Role</option>
-                                @foreach(['admin', 'teacher', 'student'] as $role)
+                                @foreach($roleOptions as $role)
                                     <option value="{{ $role }}" @selected($filters['role'] === $role)>{{ $role }}</option>
                                 @endforeach
                             </select>
@@ -90,24 +94,24 @@
                     <table class="table table-sm table-hover mb-0">
                         <thead class="table-light">
                         <tr>
-                            <th>No</th>
+                            <th class="user-col-no">No</th>
                             <th>Identity</th>
                             <th>Nama</th>
                             <th>Kelas</th>
                             <th>No. HP</th>
-                            <th>Role</th>
-                            <th class="text-end">Aksi</th>
+                            <th class="user-col-role">Role</th>
+                            <th class="user-col-action">Aksi</th>
                         </tr>
                         </thead>
                         <tbody>
                         @forelse($users as $user)
                             <tr>
-                                <td>{{ $users->firstItem() + $loop->index }}</td>
+                                <td class="user-col-no">{{ $users->firstItem() + $loop->index }}</td>
                                 <td>{{ $user->identity_number }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->kelas }}</td>
                                 <td>{{ $user->phone ?: '-' }}</td>
-                                <td>
+                                <td class="user-col-role">
                                     @php
                                         $roleBadgeClass = match ($user->role) {
                                             'admin' => 'text-bg-danger',
@@ -118,8 +122,8 @@
                                     @endphp
                                     <span class="badge {{ $roleBadgeClass }}">{{ $user->role }}</span>
                                 </td>
-                                <td class="text-end">
-                                    <div class="d-inline-flex gap-1">
+                                <td class="user-col-action">
+                                    <div class="d-inline-flex gap-1 user-action-group">
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-primary"
@@ -158,14 +162,18 @@
                                                             <div class="col-md-6">
                                                                 <label class="form-label">Role <span class="text-danger">*</span></label>
                                                                 <select name="role" class="form-select" required>
-                                                                    @foreach(['student', 'teacher', 'admin'] as $roleOption)
+                                                                    @foreach($roleOptions as $roleOption)
                                                                         <option value="{{ $roleOption }}" @selected($user->role === $roleOption)>{{ $roleOption }}</option>
                                                                     @endforeach
                                                                 </select>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <label class="form-label">Kelas <span class="text-danger">*</span></label>
-                                                                <input type="text" name="kelas" class="form-control" value="{{ $user->kelas }}" required>
+                                                                <select name="kelas" class="form-select" required>
+                                                                    @foreach($kelasOptions as $kelasOption)
+                                                                        <option value="{{ $kelasOption }}" @selected($user->kelas === $kelasOption)>{{ $kelasOption }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                         </div>
                                                         <div class="mt-2">
@@ -268,4 +276,24 @@
             importUserExcelModal.show();
         });
     </script>
+@endpush
+
+@push('styles')
+    <style>
+        .user-col-no {
+            text-align: center;
+        }
+
+        .user-col-role {
+            text-align: center;
+        }
+
+        .user-col-action {
+            text-align: center;
+        }
+
+        .user-action-group {
+            margin-right: 5px;
+        }
+    </style>
 @endpush
