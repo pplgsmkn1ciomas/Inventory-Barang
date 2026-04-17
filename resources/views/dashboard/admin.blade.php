@@ -8,7 +8,9 @@
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-3">
+    <div class="row g-3 admin-dashboard-split">
+        <div class="col-12 admin-dashboard-left">
+            <div class="row row-cols-1 g-3 admin-kpi-stack">
         <div class="col">
             <div class="card admin-kpi-card kpi-total h-100">
                 <div class="card-body d-flex flex-column">
@@ -47,77 +49,92 @@
         </div>
 
         <div class="col">
-            <div class="card admin-kpi-card kpi-laptop h-100">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="kpi-label">Laptop (Total)</div>
-                        <span class="kpi-icon"><i class="fa-solid fa-laptop"></i></span>
-                    </div>
-                    <div class="kpi-value">
-                        {{ number_format($totalLaptopAssets) }}
-                        <span class="kpi-value-unit">unit</span>
-                    </div>
-                    <div class="kpi-hint mt-2">Total barang kategori laptop (termasuk dipinjam/rusak)</div>
+            <div class="card admin-kpi-card kpi-laptop-combined h-100">
+                <div class="card-body">
+                    <div
+                        id="laptopCombinedCarousel"
+                        class="carousel slide kpi-combined-carousel h-100"
+                        data-bs-ride="carousel"
+                        data-bs-interval="2800"
+                        data-bs-pause="false"
+                    >
+                        <div class="carousel-inner h-100">
+                            <div class="carousel-item active h-100">
+                                <div class="kpi-combined-slide d-flex flex-column h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="kpi-label">Laptop (Total)</div>
+                                        <span class="kpi-icon"><i class="fa-solid fa-laptop"></i></span>
+                                    </div>
+                                    <div class="kpi-value">
+                                        {{ number_format($totalLaptopAssets) }}
+                                        <span class="kpi-value-unit">unit</span>
+                                    </div>
+                                    <div class="kpi-hint mt-2">Total barang kategori laptop (termasuk dipinjam/rusak)</div>
 
-                    <div class="kpi-slide-zone">
-                        @if($totalLaptopBrandSlides->isEmpty())
-                            <div class="kpi-slide-empty">Belum ada data merk laptop.</div>
-                        @elseif($totalLaptopBrandSlides->count() > 1)
-                            <div id="laptopTotalBrandCarousel" class="carousel slide kpi-mini-carousel" data-bs-ride="carousel" data-bs-interval="2400">
-                                <div class="carousel-inner">
-                                    @foreach($totalLaptopBrandSlides as $slide)
-                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
-                                            <div class="kpi-slide-item">
-                                                <span class="kpi-slide-label">{{ $slide['label'] }}</span>
-                                                <span class="kpi-slide-count">{{ number_format($slide['count']) }}</span>
+                                    <div class="kpi-slide-zone">
+                                        @if($totalLaptopBrandSlides->isEmpty())
+                                            <div class="kpi-slide-empty">Belum ada data merk laptop.</div>
+                                        @elseif($totalLaptopBrandSlides->count() > 1)
+                                            <div id="laptopTotalBrandCarousel" class="carousel slide kpi-mini-carousel" data-bs-ride="carousel" data-bs-interval="2200">
+                                                <div class="carousel-inner">
+                                                    @foreach($totalLaptopBrandSlides as $slide)
+                                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                                            <div class="kpi-slide-item">
+                                                                <span class="kpi-slide-label">{{ $slide['label'] }}</span>
+                                                                <span class="kpi-slide-count">{{ number_format($slide['count']) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @else
+                                            <div class="kpi-slide-item">
+                                                <span class="kpi-slide-label">{{ $totalLaptopBrandSlides->first()['label'] }}</span>
+                                                <span class="kpi-slide-count">{{ number_format($totalLaptopBrandSlides->first()['count']) }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        @else
-                            <div class="kpi-slide-item">
-                                <span class="kpi-slide-label">{{ $totalLaptopBrandSlides->first()['label'] }}</span>
-                                <span class="kpi-slide-count">{{ number_format($totalLaptopBrandSlides->first()['count']) }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col">
-            <div class="card admin-kpi-card kpi-ready h-100">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="kpi-label">Laptop Tersedia</div>
-                        <span class="kpi-icon"><i class="fa-solid fa-circle-check"></i></span>
-                    </div>
-                    <div class="kpi-value">{{ number_format($availableLaptopAssetsCount) }}</div>
-                    <div class="kpi-hint mt-2">Laptop siap dipinjam berdasarkan stok available</div>
+                            <div class="carousel-item h-100">
+                                <div class="kpi-combined-slide d-flex flex-column h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="kpi-label">Laptop Tersedia</div>
+                                        <span class="kpi-icon"><i class="fa-solid fa-circle-check"></i></span>
+                                    </div>
+                                    <div class="kpi-value">
+                                        {{ number_format($availableLaptopAssetsCount) }}
+                                        <span class="kpi-value-unit">unit</span>
+                                    </div>
+                                    <div class="kpi-hint mt-2">Laptop siap dipinjam berdasarkan stok available</div>
 
-                    <div class="kpi-slide-zone">
-                        @if($availableLaptopBrandSlides->isEmpty())
-                            <div class="kpi-slide-empty">Belum ada laptop tersedia.</div>
-                        @elseif($availableLaptopBrandSlides->count() > 1)
-                            <div id="availableLaptopBrandCarousel" class="carousel slide kpi-mini-carousel" data-bs-ride="carousel" data-bs-interval="2400">
-                                <div class="carousel-inner">
-                                    @foreach($availableLaptopBrandSlides as $slide)
-                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
-                                            <div class="kpi-slide-item">
-                                                <span class="kpi-slide-label">{{ $slide['label'] }}</span>
-                                                <span class="kpi-slide-count">{{ number_format($slide['count']) }}</span>
+                                    <div class="kpi-slide-zone">
+                                        @if($availableLaptopBrandSlides->isEmpty())
+                                            <div class="kpi-slide-empty">Belum ada laptop tersedia.</div>
+                                        @elseif($availableLaptopBrandSlides->count() > 1)
+                                            <div id="availableLaptopBrandCarousel" class="carousel slide kpi-mini-carousel" data-bs-ride="carousel" data-bs-interval="2200">
+                                                <div class="carousel-inner">
+                                                    @foreach($availableLaptopBrandSlides as $slide)
+                                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                                            <div class="kpi-slide-item">
+                                                                <span class="kpi-slide-label">{{ $slide['label'] }}</span>
+                                                                <span class="kpi-slide-count">{{ number_format($slide['count']) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @else
+                                            <div class="kpi-slide-item">
+                                                <span class="kpi-slide-label">{{ $availableLaptopBrandSlides->first()['label'] }}</span>
+                                                <span class="kpi-slide-count">{{ number_format($availableLaptopBrandSlides->first()['count']) }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        @else
-                            <div class="kpi-slide-item">
-                                <span class="kpi-slide-label">{{ $availableLaptopBrandSlides->first()['label'] }}</span>
-                                <span class="kpi-slide-count">{{ number_format($availableLaptopBrandSlides->first()['count']) }}</span>
-                            </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -196,50 +213,51 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="admin-table-tabs">
-        <div class="row g-3 justify-content-center mb-3" role="tablist" aria-label="Tab tabel dashboard admin">
-            <div class="col-12 col-md-6 col-lg-4">
-                <button
-                    type="button"
-                    class="btn admin-table-tab-btn active w-100"
-                    id="adminStockTab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#adminStockTablePane"
-                    role="tab"
-                    aria-controls="adminStockTablePane"
-                    aria-selected="true"
-                >
-                    Stok Barang tersedia
-                </button>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <button
-                    type="button"
-                    class="btn admin-table-tab-btn w-100"
-                    id="adminBorrowedTab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#adminBorrowedTablePane"
-                    role="tab"
-                    aria-controls="adminBorrowedTablePane"
-                    aria-selected="false"
-                >
-                    Barang sedang dipinjam
-                </button>
-            </div>
+        </div>
         </div>
 
-        <div class="tab-content">
-            <div
-                class="tab-pane fade show active admin-table-pane"
-                id="adminStockTablePane"
-                role="tabpanel"
-                aria-labelledby="adminStockTab"
-                tabindex="0"
-            >
-                <div class="d-flex justify-content-center">
-                    <div class="card h-100 admin-table-card">
+        <div class="col-12 admin-dashboard-right">
+            <div class="d-flex flex-column gap-3">
+                <div class="row g-2 admin-preview-switch" role="tablist" aria-label="Preview tabel dashboard admin">
+                    <div class="col-12 col-sm-6">
+                        <button
+                            type="button"
+                            class="btn admin-preview-btn active w-100"
+                            id="previewStockTab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#previewStockPane"
+                            role="tab"
+                            aria-controls="previewStockPane"
+                            aria-selected="true"
+                        >
+                            Stok Barang Tersedia
+                        </button>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <button
+                            type="button"
+                            class="btn admin-preview-btn w-100"
+                            id="previewBorrowedTab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#previewBorrowedPane"
+                            role="tab"
+                            aria-controls="previewBorrowedPane"
+                            aria-selected="false"
+                        >
+                            Barang Sedang Dipinjam
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-content">
+                    <div
+                        class="tab-pane fade show active"
+                        id="previewStockPane"
+                        role="tabpanel"
+                        aria-labelledby="previewStockTab"
+                        tabindex="0"
+                    >
+                        <div class="card h-100 admin-table-card">
                         <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
                             <span>Stok Barang Tersedia (Laptop)</span>
                             <span class="badge text-bg-primary">{{ number_format($availableLaptopAssetsCount) }}</span>
@@ -269,19 +287,17 @@
                                 </tbody>
                             </table>
                         </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div
-                class="tab-pane fade admin-table-pane"
-                id="adminBorrowedTablePane"
-                role="tabpanel"
-                aria-labelledby="adminBorrowedTab"
-                tabindex="0"
-            >
-                <div class="d-flex justify-content-center">
-                    <div class="card h-100 admin-table-card">
+                    <div
+                        class="tab-pane fade"
+                        id="previewBorrowedPane"
+                        role="tabpanel"
+                        aria-labelledby="previewBorrowedTab"
+                        tabindex="0"
+                    >
+                        <div class="card h-100 admin-table-card">
                         <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
                             <span>Barang Sedang Dipinjam</span>
                             <span class="badge text-bg-warning">{{ number_format($borrowedAssets) }}</span>
@@ -329,6 +345,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -409,6 +426,20 @@
             border-radius: 0.8rem;
         }
 
+        .kpi-combined-carousel,
+        .kpi-combined-carousel .carousel-inner,
+        .kpi-combined-carousel .carousel-item {
+            height: 100%;
+        }
+
+        .kpi-combined-slide {
+            min-height: 100%;
+        }
+
+        .kpi-combined-slide .kpi-hint {
+            min-height: calc(1.35em * 4);
+        }
+
         .kpi-slide-item,
         .kpi-slide-empty {
             display: flex;
@@ -461,6 +492,11 @@
             background: linear-gradient(135deg, #95e4be 0%, #2fbf7f 48%, #157347 100%);
         }
 
+        .kpi-laptop-combined {
+            color: #ffffff;
+            background: linear-gradient(135deg, #a3edbf 0%, #35be72 47%, #0f7a47 100%);
+        }
+
         .kpi-borrowed {
             color: #1c1b1b;
             background: linear-gradient(135deg, #ffe7b5 0%, #ffc45b 47%, #ff8f00 100%);
@@ -488,41 +524,57 @@
             background: linear-gradient(135deg, #ffb2b2 0%, #f05f5f 47%, #b42323 100%);
         }
 
-        .admin-table-tabs {
-            margin-top: 0.25rem;
+        .admin-dashboard-split {
+            align-items: flex-start;
         }
 
-        .admin-table-tab-btn {
-            min-height: 66px;
-            border-radius: 0.95rem;
+        .admin-kpi-stack .col {
+            width: 100%;
+        }
+
+        @media (min-width: 992px) {
+            .admin-dashboard-left {
+                flex: 0 0 30%;
+                max-width: 30%;
+            }
+
+            .admin-dashboard-right {
+                flex: 0 0 70%;
+                max-width: 70%;
+            }
+        }
+
+        .admin-preview-btn {
+            min-height: 58px;
+            border-radius: 0.85rem;
             border: 2px solid #d7dee9;
             background: #ffffff;
             color: #1f2937;
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 0.95rem;
+            font-weight: 700;
             box-shadow: 0 8px 18px rgba(40, 58, 90, 0.08);
             transition: all 0.2s ease;
         }
 
-        .admin-table-tab-btn:hover,
-        .admin-table-tab-btn:focus-visible {
+        .admin-preview-btn:hover,
+        .admin-preview-btn:focus-visible {
             border-color: #9eb1ca;
             box-shadow: 0 10px 20px rgba(40, 58, 90, 0.12);
             outline: 0;
         }
 
-        .admin-table-tab-btn.active {
+        .admin-preview-btn.active {
             color: #ffffff;
             background: linear-gradient(135deg, #2f66e0 0%, #173f99 100%);
             border-color: #173f99;
         }
 
-        .admin-table-pane {
-            padding-top: 0.25rem;
-        }
-
         .admin-table-card {
-            width: min(100%, 1180px);
+            width: 100%;
+            border: 0;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
         }
 
         .stock-laptop-table-wrap {
@@ -530,17 +582,13 @@
             max-width: 100%;
         }
 
-        @media (min-width: 992px) {
-            .stock-laptop-table-wrap {
-                width: calc(100% - 100px);
-                max-width: calc(100% - 100px);
-                margin-inline: auto;
-            }
-        }
-
         @media (max-width: 991.98px) {
             .admin-kpi-card {
                 min-height: 162px;
+            }
+
+            .kpi-combined-slide .kpi-hint {
+                min-height: calc(1.35em * 2);
             }
 
             .kpi-value {

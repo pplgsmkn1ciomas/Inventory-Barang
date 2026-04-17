@@ -44,20 +44,90 @@
 
         <div class="user-summary-stats px-4 pb-4">
             <div class="row g-3">
-                @foreach($summary['stats'] as $stat)
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <div class="user-summary-stat user-summary-stat-{{ $stat['tone'] }} h-100">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="user-summary-stat-label">{{ $stat['label'] }}</div>
-                                <span class="user-summary-stat-icon">
-                                    <i class="{{ $stat['icon'] }}"></i>
-                                </span>
+                <div class="col-12 col-lg-4">
+                    <div class="user-summary-stat user-summary-stat-primary h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="user-summary-stat-label">Total Pengguna</div>
+                            <span class="user-summary-stat-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </span>
+                        </div>
+                        <div class="user-summary-stat-value">{{ number_format($summary['total_users']) }}</div>
+                        <div class="user-summary-stat-meta">Semua akun yang terdaftar.</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="user-summary-stat user-summary-stat-info h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="user-summary-stat-label">Kategori Role</div>
+                            <span class="user-summary-stat-icon">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </span>
+                        </div>
+
+                        <div id="userSummaryRoleCarousel" class="carousel slide user-summary-carousel" data-bs-ride="carousel" data-bs-interval="3200">
+                            <div class="carousel-inner">
+                                @foreach($summary['role_slides'] as $roleSlide)
+                                    <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                        <div class="user-summary-slide-card">
+                                            <div class="user-summary-slide-title">
+                                                <i class="{{ $roleSlide['icon'] }} me-2"></i>{{ $roleSlide['label'] }}
+                                            </div>
+                                            <div class="user-summary-slide-value">{{ number_format($roleSlide['value']) }}</div>
+                                            <div class="user-summary-slide-meta">{{ $roleSlide['meta'] }}</div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                            <div class="user-summary-stat-value">{{ number_format($stat['value']) }}</div>
-                            <div class="user-summary-stat-meta">{{ $stat['meta'] }}</div>
+
+                            @if(count($summary['role_slides']) > 1)
+                                <button class="carousel-control-prev user-summary-carousel-control" type="button" data-bs-target="#userSummaryRoleCarousel" data-bs-slide="prev" aria-label="Role sebelumnya">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </button>
+                                <button class="carousel-control-next user-summary-carousel-control" type="button" data-bs-target="#userSummaryRoleCarousel" data-bs-slide="next" aria-label="Role berikutnya">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </button>
+                            @endif
                         </div>
                     </div>
-                @endforeach
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="user-summary-stat user-summary-stat-success h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="user-summary-stat-label">Kelas</div>
+                            <span class="user-summary-stat-icon">
+                                <i class="fa-solid fa-school"></i>
+                            </span>
+                        </div>
+
+                        <div id="userSummaryClassCarousel" class="carousel slide user-summary-carousel" data-bs-ride="carousel" data-bs-interval="3600">
+                            <div class="carousel-inner">
+                                @foreach($summary['class_slides'] as $classSlide)
+                                    <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                        <div class="user-summary-slide-card">
+                                            <div class="user-summary-slide-title">Kelas {{ $classSlide['kelas'] }}</div>
+                                            <div class="user-summary-slide-value">{{ number_format($classSlide['face_ready_students']) }}</div>
+                                            <div class="user-summary-slide-meta">
+                                                Murid dengan data face recognition tersimpan dari {{ number_format($classSlide['total_students']) }} murid ({{ $classSlide['completion_rate'] }}%).
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @if(count($summary['class_slides']) > 1)
+                                <button class="carousel-control-prev user-summary-carousel-control" type="button" data-bs-target="#userSummaryClassCarousel" data-bs-slide="prev" aria-label="Kelas sebelumnya">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </button>
+                                <button class="carousel-control-next user-summary-carousel-control" type="button" data-bs-target="#userSummaryClassCarousel" data-bs-slide="next" aria-label="Kelas berikutnya">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

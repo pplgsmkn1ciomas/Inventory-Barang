@@ -491,21 +491,47 @@
                 submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
 
                 try {
+                    var faceDescriptorPayload = [];
+
+                    try {
+                        faceDescriptorPayload = JSON.parse(capturedFaceDescriptor);
+                    } catch (parseError) {
+                        setAlert('Descriptor wajah tidak valid. Silakan capture ulang wajah.', 'danger');
+
+                        return;
+                    }
+
                     var response = await fetch(@json(route('admin.face-register.store')), {
                         method: 'POST',
+                        credentials: 'same-origin',
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-CSRF-TOKEN': @json(csrf_token())
+                            'X-CSRF-TOKEN': @json(csrf_token()),
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: JSON.stringify({
                             user_id: parseInt(userSelect.value, 10),
                             image_base64: capturedImageBase64,
-                            face_descriptor: JSON.parse(capturedFaceDescriptor)
+                            face_descriptor: faceDescriptorPayload
                         })
                     });
 
-                    var data = await response.json();
+                    var contentType = (response.headers.get('content-type') || '').toLowerCase();
+                    var isJsonResponse = contentType.indexOf('application/json') !== -1;
+                    var data = {};
+
+                    if (isJsonResponse) {
+                        data = await response.json();
+                    } else {
+                        await response.text();
+                    }
+
+                    if (response.status === 401 || response.status === 419 || response.redirected) {
+                        setAlert(data.message || 'Sesi admin berakhir. Silakan login ulang lalu coba lagi.', 'warning');
+
+                        return;
+                    }
 
                     if (response.status === 409) {
                         setAlert(data.message || 'Registrasi wajah tidak dapat dilakukan.', 'warning');
@@ -514,7 +540,7 @@
                     }
 
                     if (!response.ok) {
-                        setAlert(data.message || 'Registrasi wajah gagal.', 'danger');
+                        setAlert(data.message || ('Registrasi wajah gagal (HTTP ' + response.status + ').'), 'danger');
 
                         return;
                     }
@@ -527,7 +553,7 @@
                     }
                     updateSelectedUserInfo();
                 } catch (error) {
-                    setAlert('Terjadi kesalahan jaringan saat menghubungi server.', 'danger');
+                    setAlert('Terjadi kesalahan jaringan saat menghubungi server. Periksa koneksi lalu coba lagi.', 'danger');
                 } finally {
                     var selectedOption = userSelect.options[userSelect.selectedIndex];
                     var shouldDisableSubmit = !capturedImageBase64 || !capturedFaceDescriptor;

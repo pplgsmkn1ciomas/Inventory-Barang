@@ -14,13 +14,13 @@ class AdminAccessMiddleware
         $adminAccess = $request->session()->get('admin_access');
 
         if (!is_array($adminAccess) || empty($adminAccess['user_id']) || empty($adminAccess['granted_at'])) {
-            return redirect()->route('dashboard.public')->with('error', 'Silakan login admin terlebih dahulu.');
+            return $this->unauthorizedResponse($request, 'Silakan login admin terlebih dahulu.');
         }
 
         if ((now()->getTimestamp() - (int) $adminAccess['granted_at']) > 60 * 60 * 8) {
             $request->session()->forget('admin_access');
 
-            return redirect()->route('dashboard.public')->with('error', 'Sesi admin sudah berakhir. Silakan login ulang.');
+            return $this->unauthorizedResponse($request, 'Sesi admin sudah berakhir. Silakan login ulang.');
         }
 
         $isValidAdmin = User::query()
@@ -32,9 +32,21 @@ class AdminAccessMiddleware
         if (!$isValidAdmin) {
             $request->session()->forget('admin_access');
 
-            return redirect()->route('dashboard.public')->with('error', 'Akses admin tidak valid.');
+            return $this->unauthorizedResponse($request, 'Akses admin tidak valid.');
         }
 
         return $next($request);
+    }
+
+    private function unauthorizedResponse(Request $request, string $message): Response
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'unauthorized',
+                'message' => $message,
+            ], 401);
+        }
+
+        return redirect()->route('dashboard.public')->with('error', $message);
     }
 }

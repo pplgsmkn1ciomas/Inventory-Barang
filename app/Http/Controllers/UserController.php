@@ -75,6 +75,82 @@ class UserController extends Controller
             );
         }
 
+        $roleSlides = [
+            [
+                'label' => 'Siswa',
+                'value' => $totalStudents,
+                'meta' => 'Akun dengan role student.',
+                'icon' => 'fa-solid fa-user-graduate',
+            ],
+            [
+                'label' => 'Guru',
+                'value' => $totalTeachers,
+                'meta' => 'Akun dengan role teacher.',
+                'icon' => 'fa-solid fa-chalkboard-user',
+            ],
+            [
+                'label' => 'Admin',
+                'value' => $totalAdmins,
+                'meta' => 'Akun pengelola sistem.',
+                'icon' => 'fa-solid fa-user-shield',
+            ],
+        ];
+
+        $classFacePreviewCounts = User::query()
+            ->selectRaw("kelas, COUNT(*) as total_students, SUM(CASE WHEN face_thumbnail_path IS NOT NULL OR (face_registered_at IS NOT NULL AND face_encoding IS NOT NULL AND TRIM(face_encoding) <> '' AND TRIM(face_encoding) <> '[]') THEN 1 ELSE 0 END) as face_ready_students")
+            ->where('role', 'student')
+            ->groupBy('kelas')
+            ->get()
+            ->keyBy('kelas');
+
+        $classSlides = $kelasOptions
+            ->filter(static fn ($kelas) => filled((string) $kelas))
+            ->map(function ($kelas) use ($classFacePreviewCounts): array {
+                $classKey = (string) $kelas;
+                $classSummary = $classFacePreviewCounts->get($classKey);
+                $totalClassStudents = (int) ($classSummary->total_students ?? 0);
+                $faceReadyStudents = (int) ($classSummary->face_ready_students ?? 0);
+
+                return [
+                    'kelas' => $classKey,
+                    'face_ready_students' => $faceReadyStudents,
+                    'total_students' => $totalClassStudents,
+                    'completion_rate' => $totalClassStudents > 0
+                        ? (int) round(($faceReadyStudents / $totalClassStudents) * 100)
+                        : 0,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if ($classSlides === []) {
+            $classSlides = $classFacePreviewCounts
+                ->map(function ($classSummary, $kelas): array {
+                    $totalClassStudents = (int) ($classSummary->total_students ?? 0);
+                    $faceReadyStudents = (int) ($classSummary->face_ready_students ?? 0);
+
+                    return [
+                        'kelas' => (string) $kelas,
+                        'face_ready_students' => $faceReadyStudents,
+                        'total_students' => $totalClassStudents,
+                        'completion_rate' => $totalClassStudents > 0
+                            ? (int) round(($faceReadyStudents / $totalClassStudents) * 100)
+                            : 0,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        if ($classSlides === []) {
+            $classSlides[] = [
+                'kelas' => 'Belum ada kelas',
+                'face_ready_students' => 0,
+                'total_students' => 0,
+                'completion_rate' => 0,
+            ];
+        }
+
         $userSummary = [
             'review' => $reviewText,
             'face_completion_rate' => $faceCompletionRate,
@@ -84,36 +160,9 @@ class UserController extends Controller
                 'Wajah terekam ' . number_format($totalFaceRegisteredUsers),
                 'Perlu registrasi ' . number_format($totalFacePendingUsers),
             ],
-            'stats' => [
-                [
-                    'label' => 'Total Pengguna',
-                    'value' => $totalUsers,
-                    'meta' => 'Semua akun yang terdaftar.',
-                    'icon' => 'fa-solid fa-users',
-                    'tone' => 'primary',
-                ],
-                [
-                    'label' => 'Siswa',
-                    'value' => $totalStudents,
-                    'meta' => 'Akun dengan role student.',
-                    'icon' => 'fa-solid fa-user-graduate',
-                    'tone' => 'info',
-                ],
-                [
-                    'label' => 'Guru',
-                    'value' => $totalTeachers,
-                    'meta' => 'Akun dengan role teacher.',
-                    'icon' => 'fa-solid fa-chalkboard-user',
-                    'tone' => 'success',
-                ],
-                [
-                    'label' => 'Admin',
-                    'value' => $totalAdmins,
-                    'meta' => 'Akun pengelola sistem.',
-                    'icon' => 'fa-solid fa-user-shield',
-                    'tone' => 'warning',
-                ],
-            ],
+            'total_users' => $totalUsers,
+            'role_slides' => $roleSlides,
+            'class_slides' => $classSlides,
         ];
 
         return view('admin.users.index', [

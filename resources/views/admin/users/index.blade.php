@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-0"></div>
         <div>
             <h4 class="mb-1">Data Pengguna</h4>
             <p class="text-muted mb-0">Pengelolaan admin, guru, dan siswa.</p>
@@ -533,9 +533,14 @@
 
         .user-summary-card {
             position: relative;
-            border: 1px solid rgba(13, 110, 253, 0.12);
-            background: linear-gradient(135deg, #ffffff 0%, #f7fbff 40%, #eefbf2 100%);
+            border: 0;
+            background: transparent;
             box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+        }
+
+        .user-summary-card > .card-body {
+            background: transparent;
+            border: 0;
         }
 
         .user-summary-card::before,
@@ -552,7 +557,7 @@
             height: 240px;
             left: -90px;
             top: -120px;
-            background: radial-gradient(circle, rgba(13, 110, 253, 0.16), transparent 68%);
+            background: transparent;
         }
 
         .user-summary-card::after {
@@ -560,7 +565,7 @@
             height: 180px;
             right: -60px;
             bottom: -90px;
-            background: radial-gradient(circle, rgba(25, 135, 84, 0.12), transparent 68%);
+            background: transparent;
         }
 
         .user-summary-hero,
@@ -570,7 +575,7 @@
         }
 
         .user-summary-overview {
-            background: rgba(255, 255, 255, 0.78);
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 55%, #0f172a 100%);
             border: 1px solid rgba(148, 163, 184, 0.18);
             border-radius: 1.25rem;
             padding: 1.25rem;
@@ -578,16 +583,32 @@
             box-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
         }
 
+        .user-summary-overview h5,
+        .user-summary-overview .user-summary-review,
+        .user-summary-overview .small,
+        .user-summary-overview .text-muted,
+        .user-summary-overview .text-dark {
+            color: #ffffff !important;
+        }
+
+        .user-summary-overview .badge.bg-primary-subtle,
+        .user-summary-overview .badge.text-primary-emphasis,
+        .user-summary-overview .badge.border-primary-subtle {
+            background: rgba(255, 255, 255, 0.16) !important;
+            border-color: rgba(255, 255, 255, 0.45) !important;
+            color: #ffffff !important;
+        }
+
         .user-summary-review {
-            color: #334155;
+            color: #ffffff;
             font-size: 1rem;
             line-height: 1.65;
         }
 
         .user-summary-pill {
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(148, 163, 184, 0.24) !important;
-            color: #0f172a;
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.45) !important;
+            color: #ffffff;
             font-weight: 700;
             letter-spacing: 0.01em;
             box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
@@ -595,7 +616,7 @@
 
         .user-summary-progress {
             height: 0.8rem;
-            background: rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.28);
             border-radius: 999px;
             overflow: hidden;
         }
@@ -617,8 +638,8 @@
             gap: 0.9rem;
             padding: 1.25rem;
             border-radius: 1.25rem;
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.98) 100%);
+            border: 1px solid rgba(56, 102, 228, 0.18);
+            background-color: #FCA311;
             box-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
         }
 
@@ -668,12 +689,12 @@
             font-weight: 800;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: #64748b;
+            color: #000000;
         }
 
         .user-summary-ring-caption {
             max-width: 220px;
-            color: #64748b;
+            color: #ffffff;
             font-size: 0.85rem;
             line-height: 1.5;
             text-align: center;
@@ -688,6 +709,57 @@
             border: 1px solid transparent;
         }
 
+        .user-summary-carousel {
+            position: relative;
+        }
+
+        .user-summary-slide-card {
+            min-height: 150px;
+            border: 1px solid rgb(254, 254, 255);
+            border-radius: 0.95rem;
+            padding: 0.95rem 2.35rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .user-summary-slide-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #334155;
+        }
+
+        .user-summary-slide-value {
+            font-size: 1.95rem;
+            line-height: 1;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .user-summary-slide-meta {
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #475569;
+        }
+
+        .user-summary-carousel-control {
+            width: 2rem;
+            opacity: 0.85;
+        }
+
+        .user-summary-carousel-control .carousel-control-prev-icon,
+        .user-summary-carousel-control .carousel-control-next-icon {
+            width: 1.05rem;
+            height: 1.05rem;
+            filter: brightness(0) saturate(100%) invert(24%) sepia(17%) saturate(810%) hue-rotate(175deg) brightness(97%) contrast(90%);
+        }
+
+        .user-summary-carousel-control:hover {
+            opacity: 1;
+        }
+
         .user-summary-stat::after {
             content: '';
             position: absolute;
@@ -695,34 +767,34 @@
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 65%);
+            background: transparent;
             pointer-events: none;
         }
 
         .user-summary-stat-primary {
-            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 55%, #ffffff 100%);
+            background: #AFCDFF;
             border-color: rgba(59, 130, 246, 0.16);
         }
 
         .user-summary-stat-info {
-            background: linear-gradient(135deg, #cffafe 0%, #ecfeff 55%, #ffffff 100%);
+            background: #AFCDFF;
             border-color: rgba(6, 182, 212, 0.16);
         }
 
         .user-summary-stat-success {
-            background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 55%, #ffffff 100%);
+            background: #AFCDFF;
             border-color: rgba(34, 197, 94, 0.16);
         }
 
         .user-summary-stat-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 55%, #ffffff 100%);
+            background: #AFCDFF;
             border-color: rgba(245, 158, 11, 0.16);
         }
 
         .user-summary-stat-label {
             position: relative;
             z-index: 1;
-            font-size: 0.78rem;
+            font-size: 1rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.08em;
@@ -756,8 +828,8 @@
             align-items: center;
             justify-content: center;
             flex: 0 0 auto;
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
+            background: transparent;
+            box-shadow: 0 8px 16px rgba(255, 255, 255, 0.06);
         }
 
         .user-summary-stat-primary .user-summary-stat-icon {
@@ -817,6 +889,15 @@
 
             .user-summary-stat-value {
                 font-size: 1.55rem;
+            }
+
+            .user-summary-slide-card {
+                min-height: 138px;
+                padding: 0.85rem 2.15rem;
+            }
+
+            .user-summary-slide-value {
+                font-size: 1.7rem;
             }
         }
 

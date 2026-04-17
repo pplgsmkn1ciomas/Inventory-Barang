@@ -33,6 +33,10 @@ if errorlevel 1 (
   exit /b 1
 )
 
+if not exist ".tmp" mkdir ".tmp"
+set "TEMP=%CD%\.tmp"
+set "TMP=%CD%\.tmp"
+
 color 0A
 title Inventory Barang Laravel Server [%MODE%] (%HOST%:%PORT%)
 
@@ -63,7 +67,7 @@ if errorlevel 1 (
 echo Database siap.
 echo.
 
-start "" /b php artisan serve --host=%HOST% --port=%PORT%
+start "" /b php -d display_errors=0 -d log_errors=1 artisan serve --host=%HOST% --port=%PORT%
 
 echo Menunggu server siap...
 set "SERVER_READY=0"
