@@ -63,6 +63,20 @@ if errorlevel 1 (
 echo Database siap.
 echo.
 
-start http://%HOST%:%PORT%
-php artisan serve --host=%HOST% --port=%PORT%
+start "" /b php artisan serve --host=%HOST% --port=%PORT%
+
+echo Menunggu server siap...
+set "SERVER_READY=0"
+for /L %%I in (1,1,30) do (
+  powershell -NoProfile -Command "try { $response = Invoke-WebRequest -UseBasicParsing -Uri 'http://%HOST%:%PORT%' -TimeoutSec 1; if ($response.StatusCode -ge 200) { exit 0 } exit 1 } catch { exit 1 }" >nul 2>nul
+  if not errorlevel 1 (
+    set "SERVER_READY=1"
+    goto server_ready
+  )
+  timeout /t 1 /nobreak >nul
+)
+
+echo Server belum merespons setelah menunggu, browser tetap akan dibuka.
+:server_ready
+start "" http://%HOST%:%PORT%
 pause

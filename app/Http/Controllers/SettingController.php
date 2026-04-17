@@ -48,6 +48,14 @@ class SettingController extends Controller
         'public_header_subtitle' => 'Sistem Peminjaman & Pengembalian Aset Sekolah',
         'public_borrow_button_label' => 'Peminjaman Barang',
         'public_return_button_label' => 'Pengembalian Barang',
+        'face_camera_preview_size' => '420',
+        'face_camera_capture_size' => '512',
+        'face_camera_border_radius' => '16',
+        'face_camera_background' => '#111111',
+        'face_camera_object_fit' => 'cover',
+        'face_camera_frame_mode' => 'square',
+        'face_camera_horizontal_shift' => '0',
+        'face_camera_vertical_shift' => '0',
     ];
 
     public function index(): View
@@ -156,11 +164,15 @@ class SettingController extends Controller
         $validated = $request->validate([
             'public_header_title' => ['required', 'string', 'max:120'],
             'public_header_subtitle' => ['required', 'string', 'max:200'],
+            'public_borrow_button_label' => ['required', 'string', 'max:80'],
+            'public_return_button_label' => ['required', 'string', 'max:80'],
         ]);
 
         $this->saveSettings([
             'public_header_title' => trim((string) $validated['public_header_title']),
             'public_header_subtitle' => trim((string) $validated['public_header_subtitle']),
+            'public_borrow_button_label' => trim((string) $validated['public_borrow_button_label']),
+            'public_return_button_label' => trim((string) $validated['public_return_button_label']),
         ]);
 
         return redirect()->route('admin.settings.index', ['tab' => 'menu-b'])
@@ -170,13 +182,25 @@ class SettingController extends Controller
     public function updateMenuC(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'public_borrow_button_label' => ['required', 'string', 'max:80'],
-            'public_return_button_label' => ['required', 'string', 'max:80'],
+            'face_camera_preview_size' => ['required', 'integer', 'between:280,720'],
+            'face_camera_capture_size' => ['required', 'integer', 'between:320,1024'],
+            'face_camera_border_radius' => ['required', 'integer', 'between:0,32'],
+            'face_camera_background' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'face_camera_object_fit' => ['required', Rule::in(['cover', 'contain'])],
+            'face_camera_frame_mode' => ['required', Rule::in(['square', 'wide'])],
+            'face_camera_horizontal_shift' => ['required', 'integer', 'between:-100,100'],
+            'face_camera_vertical_shift' => ['required', 'integer', 'between:-100,100'],
         ]);
 
         $this->saveSettings([
-            'public_borrow_button_label' => trim((string) $validated['public_borrow_button_label']),
-            'public_return_button_label' => trim((string) $validated['public_return_button_label']),
+            'face_camera_preview_size' => (string) $validated['face_camera_preview_size'],
+            'face_camera_capture_size' => (string) $validated['face_camera_capture_size'],
+            'face_camera_border_radius' => (string) $validated['face_camera_border_radius'],
+            'face_camera_background' => strtolower((string) $validated['face_camera_background']),
+            'face_camera_object_fit' => (string) $validated['face_camera_object_fit'],
+            'face_camera_frame_mode' => (string) $validated['face_camera_frame_mode'],
+            'face_camera_horizontal_shift' => (string) $validated['face_camera_horizontal_shift'],
+            'face_camera_vertical_shift' => (string) $validated['face_camera_vertical_shift'],
         ]);
 
         return redirect()->route('admin.settings.index', ['tab' => 'menu-c'])

@@ -5,6 +5,7 @@ Proyek ini adalah hasil konversi dari aplikasi inventaris berbasis single-file P
 ## Stack
 
 - Backend: Laravel 13 (PHP 8.3)
+- Face Recognition: face-api.js di browser + matching descriptor di Laravel
 - Database default: SQLite
 - Frontend: Blade + Bootstrap 5
 
@@ -26,6 +27,9 @@ Proyek ini adalah hasil konversi dari aplikasi inventaris berbasis single-file P
 - Transaksi Peminjaman
 	- Proses pinjam
 	- Proses pengembalian
+- Face Recognition
+	- Registrasi wajah pengguna dari kamera browser
+	- Peminjaman berbasis pengenalan wajah (tanpa input manual NISN)
 - Barcode & Label Cetak
 	- Preview barcode aset (A4 Grid, Label 107, Label 103)
 	- Download PNG/JPEG, PDF, dan print langsung
@@ -75,9 +79,33 @@ start-server.bat test 8081
 | `/admin/assets` | Data barang |
 | `/admin/users` | Data pengguna |
 | `/admin/loans` | Transaksi peminjaman |
+| `/admin/face-register` | Registrasi wajah pengguna |
 | `/admin/loans?format=label107` | Cetak label barcode T&J No.107 |
 | `/admin/loans?format=label103` | Cetak label barcode T&J No.103 |
 | `/admin/loans?format=a4&grid=ringkas` | Preview barcode A4 preset Ringkas |
+
+## Integrasi Face Recognition
+
+### 1) Konfigurasi Laravel
+
+Tambahkan env berikut (sudah ada di `.env.example`):
+
+```env
+FACE_RECOGNITION_TOLERANCE=0.45
+```
+
+Migrasi field wajah pada tabel user:
+
+```bash
+php artisan migrate
+```
+
+### 2) Alur Pemakaian
+
+- Buka menu admin `Register Wajah`, pilih user, aktifkan kamera, capture, simpan.
+- Browser menghitung descriptor wajah dengan face-api.js, lalu Laravel menyimpan descriptor dan thumbnail.
+- Di dashboard public mode peminjaman, kamera aktif otomatis untuk mengenali user tanpa service Python terpisah.
+- Setelah wajah dikenali, scan barcode barang lalu konfirmasi peminjaman.
 
 ## Format Label Cetak
 

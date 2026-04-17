@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'face_recognition' => [
+        'tolerance' => (float) env('FACE_RECOGNITION_TOLERANCE', env('FACE_AI_TOLERANCE', 0.45)),
+    ],
+
 ];

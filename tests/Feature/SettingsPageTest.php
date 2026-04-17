@@ -28,7 +28,13 @@ class SettingsPageTest extends TestCase
             ->assertSee('Running Teks')
             ->assertSee('Master Data Sistem')
             ->assertSee('Menu B')
-            ->assertSee('Menu C');
+            ->assertSee('Kamera')
+            ->assertSee('faceCameraFrameModeInput')
+            ->assertSee('faceCameraHorizontalShiftInput')
+            ->assertSee('faceCameraVerticalShiftInput')
+            ->assertSee('faceCameraPreviewFallback')
+            ->assertSee('faceCameraPreviewStatusBadge')
+            ;
     }
 
     public function test_admin_can_update_running_text_setting(): void
@@ -215,6 +221,8 @@ class SettingsPageTest extends TestCase
         $admin = User::query()->where('role', 'admin')->firstOrFail();
         $headerTitle = 'Dashboard Publik Sekolah';
         $headerSubtitle = 'Informasi peminjaman aset harian.';
+        $borrowLabel = 'Ajukan Peminjaman';
+        $returnLabel = 'Catat Pengembalian';
 
         $this->withSession([
             'admin_access' => [
@@ -225,6 +233,8 @@ class SettingsPageTest extends TestCase
         ])->put(route('admin.settings.menu-b.update'), [
             'public_header_title' => $headerTitle,
             'public_header_subtitle' => $headerSubtitle,
+            'public_borrow_button_label' => $borrowLabel,
+            'public_return_button_label' => $returnLabel,
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-b']));
 
         $this->assertDatabaseHas('settings', [
@@ -236,31 +246,6 @@ class SettingsPageTest extends TestCase
             'setting_key' => 'public_header_subtitle',
             'setting_value' => $headerSubtitle,
         ]);
-
-        $this->get(route('dashboard.public'))
-            ->assertOk()
-            ->assertSee($headerTitle)
-            ->assertSee($headerSubtitle);
-    }
-
-    public function test_admin_can_update_menu_c_button_labels(): void
-    {
-        $this->seed();
-
-        $admin = User::query()->where('role', 'admin')->firstOrFail();
-        $borrowLabel = 'Ajukan Peminjaman';
-        $returnLabel = 'Catat Pengembalian';
-
-        $this->withSession([
-            'admin_access' => [
-                'user_id' => $admin->id,
-                'user_name' => $admin->name,
-                'granted_at' => now()->getTimestamp(),
-            ],
-        ])->put(route('admin.settings.menu-c.update'), [
-            'public_borrow_button_label' => $borrowLabel,
-            'public_return_button_label' => $returnLabel,
-        ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-c']));
 
         $this->assertDatabaseHas('settings', [
             'setting_key' => 'public_borrow_button_label',
@@ -274,7 +259,105 @@ class SettingsPageTest extends TestCase
 
         $this->get(route('dashboard.public'))
             ->assertOk()
+            ->assertSee($headerTitle)
+            ->assertSee($headerSubtitle)
             ->assertSee($borrowLabel)
             ->assertSee($returnLabel);
+    }
+
+    public function test_admin_can_update_menu_c_camera_preview_settings(): void
+    {
+        $this->seed();
+
+        $admin = User::query()->where('role', 'admin')->firstOrFail();
+        $previewSize = '520';
+        $captureSize = '640';
+        $borderRadius = '24';
+        $background = '#0b1220';
+        $objectFit = 'contain';
+        $frameMode = 'wide';
+        $horizontalShift = '25';
+        $verticalShift = '-15';
+
+        $this->withSession([
+            'admin_access' => [
+                'user_id' => $admin->id,
+                'user_name' => $admin->name,
+                'granted_at' => now()->getTimestamp(),
+            ],
+        ])->put(route('admin.settings.menu-c.update'), [
+            'face_camera_preview_size' => $previewSize,
+            'face_camera_capture_size' => $captureSize,
+            'face_camera_border_radius' => $borderRadius,
+            'face_camera_background' => $background,
+            'face_camera_object_fit' => $objectFit,
+            'face_camera_frame_mode' => $frameMode,
+            'face_camera_horizontal_shift' => $horizontalShift,
+            'face_camera_vertical_shift' => $verticalShift,
+        ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-c']));
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_preview_size',
+            'setting_value' => $previewSize,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_capture_size',
+            'setting_value' => $captureSize,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_border_radius',
+            'setting_value' => $borderRadius,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_background',
+            'setting_value' => strtolower($background),
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_object_fit',
+            'setting_value' => $objectFit,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_frame_mode',
+            'setting_value' => $frameMode,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_horizontal_shift',
+            'setting_value' => $horizontalShift,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'face_camera_vertical_shift',
+            'setting_value' => $verticalShift,
+        ]);
+
+        $this->withSession([
+            'admin_access' => [
+                'user_id' => $admin->id,
+                'user_name' => $admin->name,
+                'granted_at' => now()->getTimestamp(),
+            ],
+        ])->get(route('admin.face-register.index'))
+            ->assertOk()
+            ->assertSee('--face-camera-preview-size: 520px')
+            ->assertSee('--face-camera-border-radius: 24px')
+            ->assertSee('--face-camera-background: #0b1220')
+            ->assertSee('--face-camera-object-fit: contain')
+            ->assertSee('--face-camera-frame-ratio: 4 / 3')
+            ->assertSee('--face-camera-horizontal-shift: 25%')
+            ->assertSee('--face-camera-vertical-shift: -15%');
+
+        $this->get(route('dashboard.public'))
+            ->assertOk()
+            ->assertSee('--face-camera-preview-size: 520px')
+            ->assertSee('--face-camera-border-radius: 24px')
+            ->assertSee('--face-camera-frame-ratio: 4 / 3')
+            ->assertSee('--face-camera-horizontal-shift: 25%')
+            ->assertSee('--face-camera-vertical-shift: -15%');
     }
 }

@@ -23,6 +23,9 @@ class User extends Authenticatable
         'phone',
         'is_active',
         'password',
+        'face_encoding',
+        'face_registered_at',
+        'face_thumbnail_path',
     ];
 
     /**
@@ -31,6 +34,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'face_encoding',
     ];
 
     /**
@@ -42,6 +46,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'is_active' => 'boolean',
             'password' => 'hashed',
+            'face_registered_at' => 'datetime',
         ];
     }
 

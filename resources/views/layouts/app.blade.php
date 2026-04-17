@@ -22,6 +22,91 @@
         .table thead th { white-space: nowrap; }
         .table > :not(caption) > * > :first-child { padding-left: 1rem; }
 
+        #borrowFaceResult,
+        #returnFaceResult,
+        #faceRegisterAlert,
+        #publicRegisterFaceAlert {
+            position: relative;
+            overflow: hidden;
+            border: 0;
+            border-radius: 0.95rem;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.10);
+            padding: 0.95rem 1rem;
+            font-weight: 700;
+            line-height: 1.45;
+            letter-spacing: 0.01em;
+            text-wrap: balance;
+        }
+
+        #borrowFaceResult::before,
+        #returnFaceResult::before,
+        #faceRegisterAlert::before,
+        #publicRegisterFaceAlert::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 42%, rgba(255, 255, 255, 0.08));
+            pointer-events: none;
+        }
+
+        #borrowFaceResult.alert-secondary,
+        #returnFaceResult.alert-secondary,
+        #faceRegisterAlert.alert-secondary,
+        #publicRegisterFaceAlert.alert-secondary {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #0f172a;
+            border-left: 0.35rem solid #64748b;
+        }
+
+        #borrowFaceResult.alert-info,
+        #returnFaceResult.alert-info,
+        #faceRegisterAlert.alert-info,
+        #publicRegisterFaceAlert.alert-info {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1e3a8a;
+            border-left: 0.35rem solid #3b82f6;
+        }
+
+        #borrowFaceResult.alert-success,
+        #returnFaceResult.alert-success,
+        #faceRegisterAlert.alert-success,
+        #publicRegisterFaceAlert.alert-success {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: #065f46;
+            border-left: 0.35rem solid #10b981;
+        }
+
+        #borrowFaceResult.alert-warning,
+        #returnFaceResult.alert-warning,
+        #faceRegisterAlert.alert-warning,
+        #publicRegisterFaceAlert.alert-warning {
+            background: linear-gradient(135deg, #fff7ed 0%, #fde68a 100%);
+            color: #92400e;
+            border-left: 0.35rem solid #f59e0b;
+        }
+
+        #borrowFaceResult.alert-danger,
+        #returnFaceResult.alert-danger,
+        #faceRegisterAlert.alert-danger,
+        #publicRegisterFaceAlert.alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-left: 0.35rem solid #ef4444;
+        }
+
+        #borrowRecognizedUser,
+        #returnRecognizedUser {
+            display: block;
+            min-height: 2.8rem;
+            padding: 0.7rem 0.85rem;
+            border-radius: 0.8rem;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.03));
+            border: 1px dashed rgba(37, 99, 235, 0.24);
+            color: #0f172a;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
         .navbar-brand,
         .admin-nav-link,
         .admin-login-pill,
@@ -162,6 +247,23 @@
                 font-size: 0.92rem;
             }
         }
+
+        @media (max-width: 575.98px) {
+            #borrowFaceResult,
+            #returnFaceResult,
+            #faceRegisterAlert,
+            #publicRegisterFaceAlert {
+                padding: 0.82rem 0.9rem;
+                font-size: 0.92rem;
+            }
+
+            #borrowRecognizedUser,
+            #returnRecognizedUser {
+                min-height: 2.6rem;
+                padding: 0.62rem 0.75rem;
+                font-size: 0.88rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -261,6 +363,12 @@
                         <a class="nav-link admin-nav-link {{ request()->routeIs('admin.loans.*') ? 'active' : '' }}" href="{{ route('admin.loans.index') }}">
                             <i class="fa-solid fa-barcode"></i>
                             <span>Barcode</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link admin-nav-link {{ request()->routeIs('admin.face-register.*') ? 'active' : '' }}" href="{{ route('admin.face-register.index') }}">
+                            <i class="fa-solid fa-face-viewfinder"></i>
+                            <span>Register Wajah</span>
                         </a>
                     </li>
                     <li class="nav-item">

@@ -198,81 +198,139 @@
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-                    <span>Stok Barang Tersedia (Laptop)</span>
-                    <span class="badge text-bg-primary">{{ number_format($availableLaptopAssetsCount) }}</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Barang</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @forelse($availableAssets as $asset)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>
-                                    <div class="fw-semibold">{{ $asset->brand }}</div>
-                                    <small class="text-muted">{{ $asset->model }} ({{ $asset->serial_number }})</small>
-                                </td>
-                                <td><span class="badge text-bg-success">Ready</span></td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="3" class="text-center text-muted py-3">Tidak ada stok tersedia.</td></tr>
-                        @endforelse
-                        </tbody>
-                    </table>
-                </div>
+    <div class="admin-table-tabs">
+        <div class="row g-3 justify-content-center mb-3" role="tablist" aria-label="Tab tabel dashboard admin">
+            <div class="col-12 col-md-6 col-lg-4">
+                <button
+                    type="button"
+                    class="btn admin-table-tab-btn active w-100"
+                    id="adminStockTab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#adminStockTablePane"
+                    role="tab"
+                    aria-controls="adminStockTablePane"
+                    aria-selected="true"
+                >
+                    Stok Barang tersedia
+                </button>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <button
+                    type="button"
+                    class="btn admin-table-tab-btn w-100"
+                    id="adminBorrowedTab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#adminBorrowedTablePane"
+                    role="tab"
+                    aria-controls="adminBorrowedTablePane"
+                    aria-selected="false"
+                >
+                    Barang sedang dipinjam
+                </button>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-                    <span>Barang Sedang Dipinjam</span>
-                    <span class="badge text-bg-warning">{{ number_format($borrowedAssets) }}</span>
+
+        <div class="tab-content">
+            <div
+                class="tab-pane fade show active admin-table-pane"
+                id="adminStockTablePane"
+                role="tabpanel"
+                aria-labelledby="adminStockTab"
+                tabindex="0"
+            >
+                <div class="d-flex justify-content-center">
+                    <div class="card h-100 admin-table-card">
+                        <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                            <span>Stok Barang Tersedia (Laptop)</span>
+                            <span class="badge text-bg-primary">{{ number_format($availableLaptopAssetsCount) }}</span>
+                        </div>
+                        <div class="table-responsive stock-laptop-table-wrap">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Barang</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($availableAssets as $asset)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $asset->brand }}</div>
+                                            <small class="text-muted">{{ $asset->model }} ({{ $asset->serial_number }})</small>
+                                        </td>
+                                        <td><span class="badge text-bg-success">Ready</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="text-center text-muted py-3">Tidak ada stok tersedia.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Peminjam</th>
-                            <th>Kelas</th>
-                            <th>No. HP</th>
-                            <th>Tanggal Pinjam</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @forelse($activeLoans as $loan)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>
-                                    <div class="fw-semibold">{{ $loan->user?->name ?? '-' }}</div>
-                                    <small class="text-muted">{{ $loan->asset?->brand }} {{ $loan->asset?->model }}</small>
-                                </td>
-                                <td>{{ $loan->user?->kelas ?? '-' }}</td>
-                                <td>{{ $loan->user?->phone ?? '-' }}</td>
-                                <td>
-                                    @if($loan->loan_date)
-                                        <div>{{ $loan->loan_date->format('d/m/Y') }}</div>
-                                        <small class="text-muted">{{ $loan->loan_date->format('H:i:s') }}</small>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="text-center text-muted py-3">Tidak ada pinjaman aktif.</td></tr>
-                        @endforelse
-                        </tbody>
-                    </table>
+            </div>
+
+            <div
+                class="tab-pane fade admin-table-pane"
+                id="adminBorrowedTablePane"
+                role="tabpanel"
+                aria-labelledby="adminBorrowedTab"
+                tabindex="0"
+            >
+                <div class="d-flex justify-content-center">
+                    <div class="card h-100 admin-table-card">
+                        <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                            <span>Barang Sedang Dipinjam</span>
+                            <span class="badge text-bg-warning">{{ number_format($borrowedAssets) }}</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Peminjam</th>
+                                    <th>Serial Number</th>
+                                    <th>Kode Barcode</th>
+                                    <th>Kelas</th>
+                                    <th>No. HP</th>
+                                    <th>Tanggal Pinjam</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($activeLoans as $loan)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $loan->user?->name ?? '-' }}</div>
+                                            <small class="text-muted">{{ $loan->asset?->brand }} {{ $loan->asset?->model }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $loan->asset?->serial_number ?? '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $loan->asset?->barcode ?? '-' }}</div>
+                                        </td>
+                                        <td>{{ $loan->user?->kelas ?? '-' }}</td>
+                                        <td>{{ $loan->user?->phone ?? '-' }}</td>
+                                        <td>
+                                            @if($loan->loan_date)
+                                                <div>{{ $loan->loan_date->format('d/m/Y') }}</div>
+                                                <small class="text-muted">{{ $loan->loan_date->format('H:i:s') }}</small>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada pinjaman aktif.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -428,6 +486,56 @@
         .kpi-damaged {
             color: #ffffff;
             background: linear-gradient(135deg, #ffb2b2 0%, #f05f5f 47%, #b42323 100%);
+        }
+
+        .admin-table-tabs {
+            margin-top: 0.25rem;
+        }
+
+        .admin-table-tab-btn {
+            min-height: 66px;
+            border-radius: 0.95rem;
+            border: 2px solid #d7dee9;
+            background: #ffffff;
+            color: #1f2937;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 8px 18px rgba(40, 58, 90, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .admin-table-tab-btn:hover,
+        .admin-table-tab-btn:focus-visible {
+            border-color: #9eb1ca;
+            box-shadow: 0 10px 20px rgba(40, 58, 90, 0.12);
+            outline: 0;
+        }
+
+        .admin-table-tab-btn.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #2f66e0 0%, #173f99 100%);
+            border-color: #173f99;
+        }
+
+        .admin-table-pane {
+            padding-top: 0.25rem;
+        }
+
+        .admin-table-card {
+            width: min(100%, 1180px);
+        }
+
+        .stock-laptop-table-wrap {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @media (min-width: 992px) {
+            .stock-laptop-table-wrap {
+                width: calc(100% - 100px);
+                max-width: calc(100% - 100px);
+                margin-inline: auto;
+            }
         }
 
         @media (max-width: 991.98px) {

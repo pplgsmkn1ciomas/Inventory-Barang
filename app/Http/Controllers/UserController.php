@@ -9,6 +9,7 @@ use App\Services\AssetOptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
@@ -47,11 +48,79 @@ class UserController extends Controller
         $users = $query->latest('id')->paginate(20)->withQueryString();
         $roleOptions = collect($this->resolveRoleOptions());
         $kelasOptions = collect($this->resolveKelasOptions());
+        $totalUsers = User::count();
+        $totalActiveUsers = User::where('is_active', true)->count();
+        $totalInactiveUsers = User::where('is_active', false)->count();
+        $totalStudents = User::where('role', 'student')->count();
+        $totalTeachers = User::where('role', 'teacher')->count();
+        $totalAdmins = User::where('role', 'admin')->count();
+        $totalFaceRegisteredUsers = User::whereNotNull('face_registered_at')->count();
+        $totalFacePendingUsers = max($totalUsers - $totalFaceRegisteredUsers, 0);
+        $faceCompletionRate = $totalUsers > 0
+            ? (int) round(($totalFaceRegisteredUsers / $totalUsers) * 100)
+            : 0;
+
+        if ($totalUsers === 0) {
+            $reviewText = 'Belum ada data pengguna yang tersimpan.';
+        } elseif ($totalFacePendingUsers > 0) {
+            $reviewText = sprintf(
+                'Kelengkapan data wajah saat ini %d%%. Ada %d pengguna yang masih perlu registrasi wajah.',
+                $faceCompletionRate,
+                $totalFacePendingUsers,
+            );
+        } else {
+            $reviewText = sprintf(
+                'Kelengkapan data wajah saat ini %d%%. Seluruh pengguna sudah memiliki data wajah.',
+                $faceCompletionRate,
+            );
+        }
+
+        $userSummary = [
+            'review' => $reviewText,
+            'face_completion_rate' => $faceCompletionRate,
+            'highlights' => [
+                'Aktif ' . number_format($totalActiveUsers),
+                'Nonaktif ' . number_format($totalInactiveUsers),
+                'Wajah terekam ' . number_format($totalFaceRegisteredUsers),
+                'Perlu registrasi ' . number_format($totalFacePendingUsers),
+            ],
+            'stats' => [
+                [
+                    'label' => 'Total Pengguna',
+                    'value' => $totalUsers,
+                    'meta' => 'Semua akun yang terdaftar.',
+                    'icon' => 'fa-solid fa-users',
+                    'tone' => 'primary',
+                ],
+                [
+                    'label' => 'Siswa',
+                    'value' => $totalStudents,
+                    'meta' => 'Akun dengan role student.',
+                    'icon' => 'fa-solid fa-user-graduate',
+                    'tone' => 'info',
+                ],
+                [
+                    'label' => 'Guru',
+                    'value' => $totalTeachers,
+                    'meta' => 'Akun dengan role teacher.',
+                    'icon' => 'fa-solid fa-chalkboard-user',
+                    'tone' => 'success',
+                ],
+                [
+                    'label' => 'Admin',
+                    'value' => $totalAdmins,
+                    'meta' => 'Akun pengelola sistem.',
+                    'icon' => 'fa-solid fa-user-shield',
+                    'tone' => 'warning',
+                ],
+            ],
+        ];
 
         return view('admin.users.index', [
             'users' => $users,
             'roleOptions' => $roleOptions,
             'kelasOptions' => $kelasOptions,
+            'userSummary' => $userSummary,
             'filters' => [
                 'search' => (string) $request->input('search', ''),
                 'role' => (string) $request->input('role', ''),
@@ -154,6 +223,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $thumbnailPath = $user->face_thumbnail_path;
+
         if ($user->loans()->exists()) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Pengguna tidak bisa dihapus karena memiliki riwayat peminjaman.');
@@ -161,7 +232,33 @@ class UserController extends Controller
 
         $user->delete();
 
+        if (filled($thumbnailPath)) {
+            Storage::disk('public')->delete($thumbnailPath);
+        }
+
         return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus.');
+    }
+
+    public function destroyFaceThumbnail(User $user): RedirectResponse
+    {
+        $thumbnailPath = $user->face_thumbnail_path;
+
+        if (!filled($thumbnailPath) && !filled($user->face_encoding) && is_null($user->face_registered_at)) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Data wajah belum tersedia untuk dihapus.');
+        }
+
+        if (filled($thumbnailPath)) {
+            Storage::disk('public')->delete($thumbnailPath);
+        }
+
+        $user->update([
+            'face_encoding' => null,
+            'face_registered_at' => null,
+            'face_thumbnail_path' => null,
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'Data wajah berhasil dihapus.');
     }
 
     /**
