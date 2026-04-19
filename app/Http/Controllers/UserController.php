@@ -97,7 +97,7 @@ class UserController extends Controller
         ];
 
         $classFacePreviewCounts = User::query()
-            ->selectRaw("kelas, COUNT(*) as total_students, SUM(CASE WHEN face_thumbnail_path IS NOT NULL OR (face_registered_at IS NOT NULL AND face_encoding IS NOT NULL AND TRIM(face_encoding) <> '' AND TRIM(face_encoding) <> '[]') THEN 1 ELSE 0 END) as face_ready_students")
+            ->selectRaw("kelas, COUNT(*) as total_students, SUM(CASE WHEN face_thumbnail_path IS NOT NULL OR (face_encoding IS NOT NULL AND TRIM(face_encoding) <> '' AND TRIM(face_encoding) <> '[]') THEN 1 ELSE 0 END) as face_ready_students")
             ->where('role', 'student')
             ->groupBy('kelas')
             ->get()

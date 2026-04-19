@@ -476,7 +476,7 @@ class DashboardController extends Controller
                 'kelas' => $className,
                 'identity_number' => $student->identity_number,
                 'phone' => $student->phone,
-                'has_face_data' => filled($student->face_encoding) || filled($student->face_registered_at) || filled($student->face_thumbnail_path),
+                'has_face_data' => $this->hasFaceEncoding($student->face_encoding) || filled($student->face_thumbnail_path),
             ];
         }
 
@@ -485,7 +485,18 @@ class DashboardController extends Controller
 
     private function hasRegisteredFace(User $user): bool
     {
-        return filled($user->face_encoding) || filled($user->face_registered_at) || filled($user->face_thumbnail_path);
+        return $this->hasFaceEncoding($user->face_encoding) || filled($user->face_thumbnail_path);
+    }
+
+    private function hasFaceEncoding(?string $faceEncoding): bool
+    {
+        if ($faceEncoding === null) {
+            return false;
+        }
+
+        $normalizedEncoding = trim($faceEncoding);
+
+        return $normalizedEncoding !== '' && $normalizedEncoding !== '[]';
     }
 
     /**

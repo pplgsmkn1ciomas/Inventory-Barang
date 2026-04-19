@@ -29,6 +29,14 @@
         $cameraPreviewValues['face_camera_frame_ratio'] = $cameraPreviewValues['face_camera_frame_mode'] === 'wide' ? '4 / 3' : '1 / 1';
         $cameraPreviewSampleSvg = rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient><linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#60a5fa"/></linearGradient></defs><rect width="800" height="800" rx="72" fill="url(#bg)"/><circle cx="400" cy="250" r="110" fill="url(#accent)" opacity="0.95"/><rect x="210" y="385" width="380" height="260" rx="110" fill="#334155" opacity="0.95"/><rect x="140" y="682" width="520" height="54" rx="18" fill="#0b1220" opacity="0.8"/><rect x="110" y="120" width="180" height="42" rx="21" fill="#ffffff" opacity="0.16"/><rect x="510" y="120" width="180" height="42" rx="21" fill="#ffffff" opacity="0.16"/><text x="400" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#e2e8f0">Preview Kamera</text><text x="400" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#cbd5e1">Dynamic setting preview</text></svg>');
         $cameraPreviewSampleImage = 'data:image/svg+xml;charset=UTF-8,' . $cameraPreviewSampleSvg;
+        $publicNavLogoPath = trim((string) ($settingValues['public_nav_logo_path'] ?? ''));
+        $adminNavLogoPath = trim((string) ($settingValues['admin_nav_logo_path'] ?? ''));
+        $publicNavLogoPreviewUrl = $publicNavLogoPath !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($publicNavLogoPath)
+            ? \Illuminate\Support\Facades\Storage::url($publicNavLogoPath)
+            : '';
+        $adminNavLogoPreviewUrl = $adminNavLogoPath !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($adminNavLogoPath)
+            ? \Illuminate\Support\Facades\Storage::url($adminNavLogoPath)
+            : '';
         $menuAOptionMeta = [
             'categories' => ['label' => 'Kategori', 'placeholder' => 'Contoh: Laptop'],
             'brands' => ['label' => 'Merk', 'placeholder' => 'Contoh: Lenovo'],
@@ -137,26 +145,30 @@
                                     <div class="form-text">Teks ini akan ditampilkan pada banner berjalan di bagian bawah halaman dashboard public.</div>
                                 </div>
 
-                                <div class="row g-3">
-                                    <div class="col-md-6">
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-md-4">
                                         <label class="form-label">Status Running Teks</label>
                                         <select id="runningTextEnabledInput" name="public_reminder_enabled" class="form-select" required>
                                             <option value="1" @selected(old('public_reminder_enabled', $settingValues['public_reminder_enabled']) === '1')>ON</option>
                                             <option value="0" @selected(old('public_reminder_enabled', $settingValues['public_reminder_enabled']) === '0')>OFF</option>
                                         </select>
-                                        <div class="form-text">Pilih OFF untuk menyembunyikan banner running teks di dashboard public.</div>
                                     </div>
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">Warna Background</label>
                                         <input type="color" id="runningTextBgInput" name="public_reminder_background" class="form-control form-control-color w-100" value="{{ old('public_reminder_background', $settingValues['public_reminder_background']) }}" required>
                                     </div>
-                                    <div class="col-md-6">
+
+                                    <div class="col-md-4">
                                         <label class="form-label">Warna Teks</label>
                                         <input type="color" id="runningTextColorInput" name="public_reminder_text_color" class="form-control form-control-color w-100" value="{{ old('public_reminder_text_color', $settingValues['public_reminder_text_color']) }}" required>
                                     </div>
+                                </div>
 
-                                    <div class="col-md-6">
+                                <div class="form-text mt-2">Pilih OFF untuk menyembunyikan banner running teks di dashboard public.</div>
+
+                                <div class="row g-3 align-items-start mt-1">
+                                    <div class="col-md-4">
                                         <label class="form-label d-flex justify-content-between">
                                             <span>Kecepatan Gerak</span>
                                             <span class="badge text-bg-secondary" id="runningTextSpeedLabel">{{ old('public_running_text_speed', $settingValues['public_running_text_speed']) }}s</span>
@@ -164,7 +176,7 @@
                                         <input type="range" id="runningTextSpeedInput" name="public_running_text_speed" class="form-range" min="5" max="40" step="1" value="{{ old('public_running_text_speed', $settingValues['public_running_text_speed']) }}">
                                     </div>
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label d-flex justify-content-between">
                                             <span>Ukuran Font</span>
                                             <span class="badge text-bg-secondary" id="runningTextFontSizeLabel">{{ old('public_running_text_font_size', $settingValues['public_running_text_font_size']) }}px</span>
@@ -172,7 +184,7 @@
                                         <input type="range" id="runningTextFontSizeInput" name="public_running_text_font_size" class="form-range" min="12" max="36" step="1" value="{{ old('public_running_text_font_size', $settingValues['public_running_text_font_size']) }}">
                                     </div>
 
-                                    <div class="col-12">
+                                    <div class="col-md-4">
                                         <label class="form-label">Font Teks</label>
                                         <select id="runningTextFontFamilyInput" name="public_running_text_font_family" class="form-select" required>
                                             @foreach($fontFamilyOptions as $fontKey => $fontLabel)
@@ -275,14 +287,14 @@
                 </div>
 
                 <div class="tab-pane fade {{ $activeTab === 'menu-b' ? 'show active' : '' }}" id="tab-menu-b" role="tabpanel" aria-labelledby="tab-menu-b-link" tabindex="0">
-                    <form method="POST" action="{{ route('admin.settings.menu-b.update') }}" class="row g-3">
+                    <form method="POST" action="{{ route('admin.settings.menu-b.update') }}" class="row g-3" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="col-lg-8">
                             <div class="border rounded-3 p-3 h-100 bg-light-subtle">
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <i class="fa-solid fa-heading text-primary"></i>
-                                    <div class="fw-semibold">Konfigurasi Header & Tombol Public</div>
+                                    <div class="fw-semibold">Konfigurasi Dashboard Public</div>
                                 </div>
 
                                 <div class="mb-3">
@@ -307,6 +319,49 @@
                                 </div>
 
                                 <div class="form-text mt-2">Perubahan judul dan tombol akan langsung dipakai di dashboard public.</div>
+
+                                <hr class="my-3">
+
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fa-solid fa-bars-progress text-primary"></i>
+                                    <div class="fw-semibold">Konfigurasi Navbar Public & Admin</div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Logo Public (PNG)</label>
+                                        <input type="file" id="menuBPublicNavLogoInput" name="public_nav_logo_file" class="form-control" accept="image/png">
+                                        <div class="form-text">Upload logo PNG untuk mode public. Maksimal 2 MB.</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Logo Admin (PNG)</label>
+                                        <input type="file" id="menuBAdminNavLogoInput" name="admin_nav_logo_file" class="form-control" accept="image/png">
+                                        <div class="form-text">Upload logo PNG untuk mode admin. Maksimal 2 MB.</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Teks Brand Public <span class="text-danger">*</span></label>
+                                        <input type="text" id="menuBPublicNavTextInput" name="public_nav_brand_text" class="form-control" maxlength="60" value="{{ old('public_nav_brand_text', $settingValues['public_nav_brand_text']) }}" required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Subteks Brand Public <span class="text-danger">*</span></label>
+                                        <input type="text" id="menuBPublicNavSubtextInput" name="public_nav_brand_subtext" class="form-control" maxlength="120" value="{{ old('public_nav_brand_subtext', $settingValues['public_nav_brand_subtext']) }}" required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Teks Brand Admin <span class="text-danger">*</span></label>
+                                        <input type="text" id="menuBAdminNavTitleInput" name="admin_nav_brand_title" class="form-control" maxlength="80" value="{{ old('admin_nav_brand_title', $settingValues['admin_nav_brand_title']) }}" required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Subteks Brand Admin <span class="text-danger">*</span></label>
+                                        <input type="text" id="menuBAdminNavSubtitleInput" name="admin_nav_brand_subtitle" class="form-control" maxlength="140" value="{{ old('admin_nav_brand_subtitle', $settingValues['admin_nav_brand_subtitle']) }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-text mt-2">Perubahan logo dan teks navbar akan otomatis dipakai pada mode public dan admin.</div>
                             </div>
                         </div>
 
@@ -314,9 +369,9 @@
                             <div class="border rounded-3 p-3 h-100 bg-white">
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <i class="fa-solid fa-eye text-primary"></i>
-                                    <div class="fw-semibold">Preview Header & Tombol</div>
+                                    <div class="fw-semibold">Preview Dashboard & Navbar</div>
                                 </div>
-                                <div class="small text-muted mb-2">Preview live untuk judul, subjudul, dan label tombol public.</div>
+                                <div class="small text-muted mb-2">Preview live untuk header, tombol, dan brand navbar.</div>
 
                                 <div class="border rounded-3 p-3 bg-light mb-3">
                                     <div id="menuBPreviewTitle" class="h5 fw-bold mb-1">{{ old('public_header_title', $settingValues['public_header_title']) }}</div>
@@ -326,6 +381,46 @@
                                 <div class="d-flex flex-column gap-2">
                                     <button type="button" id="menuBPreviewBorrowButton" class="btn btn-outline-primary" disabled>{{ old('public_borrow_button_label', $settingValues['public_borrow_button_label']) }}</button>
                                     <button type="button" id="menuBPreviewReturnButton" class="btn btn-outline-success" disabled>{{ old('public_return_button_label', $settingValues['public_return_button_label']) }}</button>
+                                </div>
+
+                                <div class="small text-muted mt-3 mb-2">Preview Navbar Public</div>
+                                <div class="border rounded-3 p-2 bg-light mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white" style="width: 34px; height: 34px;">
+                                            <img
+                                                id="menuBPreviewPublicNavLogo"
+                                                src="{{ $publicNavLogoPreviewUrl }}"
+                                                alt="Logo Public"
+                                                class="{{ $publicNavLogoPreviewUrl === '' ? 'd-none' : '' }}"
+                                                style="width: 100%; height: 100%; object-fit: contain; padding: 0.25rem;"
+                                            >
+                                            <i id="menuBPreviewPublicNavLogoPlaceholder" class="fa-solid fa-image {{ $publicNavLogoPreviewUrl === '' ? '' : 'd-none' }}"></i>
+                                        </span>
+                                        <div class="d-flex flex-column lh-sm">
+                                            <span id="menuBPreviewPublicNavText" class="fw-bold">{{ old('public_nav_brand_text', $settingValues['public_nav_brand_text']) }}</span>
+                                            <span id="menuBPreviewPublicNavSubtext" class="text-secondary small">| {{ old('public_nav_brand_subtext', $settingValues['public_nav_brand_subtext']) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="small text-muted mb-2">Preview Navbar Admin</div>
+                                <div class="rounded-3 p-2 text-white" style="background: linear-gradient(118deg, #0a2349 0%, #0b5ed7 50%, #1f7ee5 100%);">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-3" style="width: 34px; height: 34px; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35);">
+                                            <img
+                                                id="menuBPreviewAdminNavLogo"
+                                                src="{{ $adminNavLogoPreviewUrl }}"
+                                                alt="Logo Admin"
+                                                class="{{ $adminNavLogoPreviewUrl === '' ? 'd-none' : '' }}"
+                                                style="width: 100%; height: 100%; object-fit: contain; padding: 0.22rem;"
+                                            >
+                                            <i id="menuBPreviewAdminNavLogoPlaceholder" class="fa-solid fa-image {{ $adminNavLogoPreviewUrl === '' ? '' : 'd-none' }}"></i>
+                                        </span>
+                                        <div class="d-flex flex-column" style="line-height: 1.05;">
+                                            <span id="menuBPreviewAdminNavTitle" class="fw-bold">{{ old('admin_nav_brand_title', $settingValues['admin_nav_brand_title']) }}</span>
+                                            <span id="menuBPreviewAdminNavSubtitle" class="small" style="letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.88;">{{ old('admin_nav_brand_subtitle', $settingValues['admin_nav_brand_subtitle']) }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1420,10 +1515,53 @@
             var menuBHeaderSubtitleInput = document.getElementById('menuBHeaderSubtitleInput');
             var menuBBorrowLabelInput = document.getElementById('menuBBorrowLabelInput');
             var menuBReturnLabelInput = document.getElementById('menuBReturnLabelInput');
+            var menuBPublicNavLogoInput = document.getElementById('menuBPublicNavLogoInput');
+            var menuBAdminNavLogoInput = document.getElementById('menuBAdminNavLogoInput');
+            var menuBPublicNavTextInput = document.getElementById('menuBPublicNavTextInput');
+            var menuBPublicNavSubtextInput = document.getElementById('menuBPublicNavSubtextInput');
+            var menuBAdminNavTitleInput = document.getElementById('menuBAdminNavTitleInput');
+            var menuBAdminNavSubtitleInput = document.getElementById('menuBAdminNavSubtitleInput');
             var menuBPreviewTitle = document.getElementById('menuBPreviewTitle');
             var menuBPreviewSubtitle = document.getElementById('menuBPreviewSubtitle');
             var menuBPreviewBorrowButton = document.getElementById('menuBPreviewBorrowButton');
             var menuBPreviewReturnButton = document.getElementById('menuBPreviewReturnButton');
+            var menuBPreviewPublicNavLogo = document.getElementById('menuBPreviewPublicNavLogo');
+            var menuBPreviewAdminNavLogo = document.getElementById('menuBPreviewAdminNavLogo');
+            var menuBPreviewPublicNavLogoPlaceholder = document.getElementById('menuBPreviewPublicNavLogoPlaceholder');
+            var menuBPreviewAdminNavLogoPlaceholder = document.getElementById('menuBPreviewAdminNavLogoPlaceholder');
+            var menuBPreviewPublicNavText = document.getElementById('menuBPreviewPublicNavText');
+            var menuBPreviewPublicNavSubtext = document.getElementById('menuBPreviewPublicNavSubtext');
+            var menuBPreviewAdminNavTitle = document.getElementById('menuBPreviewAdminNavTitle');
+            var menuBPreviewAdminNavSubtitle = document.getElementById('menuBPreviewAdminNavSubtitle');
+
+            var syncMenuBLogoPreview = function (fileInput, imageElement, placeholderElement) {
+                if (!fileInput || !imageElement || !fileInput.files || !fileInput.files[0]) {
+                    return;
+                }
+
+                var selectedFile = fileInput.files[0];
+
+                if (selectedFile.type !== 'image/png') {
+                    return;
+                }
+
+                var fileReader = new FileReader();
+                fileReader.onload = function (event) {
+                    var result = event && event.target ? event.target.result : null;
+
+                    if (typeof result !== 'string' || result === '') {
+                        return;
+                    }
+
+                    imageElement.src = result;
+                    imageElement.classList.remove('d-none');
+
+                    if (placeholderElement) {
+                        placeholderElement.classList.add('d-none');
+                    }
+                };
+                fileReader.readAsDataURL(selectedFile);
+            };
 
             var syncMenuBPreview = function () {
                 if (menuBPreviewTitle && menuBHeaderTitleInput) {
@@ -1441,14 +1579,54 @@
                 if (menuBPreviewReturnButton && menuBReturnLabelInput) {
                     menuBPreviewReturnButton.textContent = menuBReturnLabelInput.value || 'Pengembalian Barang';
                 }
+
+                if (menuBPreviewPublicNavText && menuBPublicNavTextInput) {
+                    menuBPreviewPublicNavText.textContent = menuBPublicNavTextInput.value || 'SIM-IV';
+                }
+
+                if (menuBPreviewPublicNavSubtext && menuBPublicNavSubtextInput) {
+                    menuBPreviewPublicNavSubtext.textContent = '| ' + (menuBPublicNavSubtextInput.value || 'School Inventory System');
+                }
+
+                if (menuBPreviewAdminNavTitle && menuBAdminNavTitleInput) {
+                    menuBPreviewAdminNavTitle.textContent = menuBAdminNavTitleInput.value || 'Inventory Barang';
+                }
+
+                if (menuBPreviewAdminNavSubtitle && menuBAdminNavSubtitleInput) {
+                    menuBPreviewAdminNavSubtitle.textContent = menuBAdminNavSubtitleInput.value || 'SMK NEGERI 1 CIOMAS';
+                }
             };
 
-            if (menuBHeaderTitleInput && menuBHeaderSubtitleInput && menuBBorrowLabelInput && menuBReturnLabelInput) {
-                menuBHeaderTitleInput.addEventListener('input', syncMenuBPreview);
-                menuBHeaderSubtitleInput.addEventListener('input', syncMenuBPreview);
-                menuBBorrowLabelInput.addEventListener('input', syncMenuBPreview);
-                menuBReturnLabelInput.addEventListener('input', syncMenuBPreview);
+            var menuBPreviewInputs = [
+                menuBHeaderTitleInput,
+                menuBHeaderSubtitleInput,
+                menuBBorrowLabelInput,
+                menuBReturnLabelInput,
+                menuBPublicNavTextInput,
+                menuBPublicNavSubtextInput,
+                menuBAdminNavTitleInput,
+                menuBAdminNavSubtitleInput,
+            ].filter(function (element) {
+                return Boolean(element);
+            });
+
+            if (menuBPreviewInputs.length > 0) {
+                menuBPreviewInputs.forEach(function (element) {
+                    element.addEventListener('input', syncMenuBPreview);
+                });
                 syncMenuBPreview();
+            }
+
+            if (menuBPublicNavLogoInput && menuBPreviewPublicNavLogo) {
+                menuBPublicNavLogoInput.addEventListener('change', function () {
+                    syncMenuBLogoPreview(menuBPublicNavLogoInput, menuBPreviewPublicNavLogo, menuBPreviewPublicNavLogoPlaceholder);
+                });
+            }
+
+            if (menuBAdminNavLogoInput && menuBPreviewAdminNavLogo) {
+                menuBAdminNavLogoInput.addEventListener('change', function () {
+                    syncMenuBLogoPreview(menuBAdminNavLogoInput, menuBPreviewAdminNavLogo, menuBPreviewAdminNavLogoPlaceholder);
+                });
             }
 
             var faceCameraPreviewSizeInput = document.getElementById('faceCameraPreviewSizeInput');

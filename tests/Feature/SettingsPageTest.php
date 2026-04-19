@@ -5,9 +5,12 @@ namespace Tests\Feature;
 use App\Models\ActivityLog;
 use App\Models\Asset;
 use App\Models\Loan;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SettingsPageTest extends TestCase
@@ -705,12 +708,19 @@ class SettingsPageTest extends TestCase
     public function test_admin_can_update_menu_b_header_settings(): void
     {
         $this->seed();
+        Storage::fake('public');
 
         $admin = User::query()->where('role', 'admin')->firstOrFail();
         $headerTitle = 'Dashboard Publik Sekolah';
         $headerSubtitle = 'Informasi peminjaman aset harian.';
         $borrowLabel = 'Ajukan Peminjaman';
         $returnLabel = 'Catat Pengembalian';
+        $publicNavLogoFile = UploadedFile::fake()->image('logo-public.png', 180, 180);
+        $publicNavBrandText = 'SI-BAR';
+        $publicNavBrandSubtext = 'Pusat Inventaris Sekolah';
+        $adminNavLogoFile = UploadedFile::fake()->image('logo-admin.png', 180, 180);
+        $adminNavBrandTitle = 'Inventory Center';
+        $adminNavBrandSubtitle = 'SMK NEGERI 1 CIOMAS';
 
         $this->withSession([
             'admin_access' => [
@@ -723,6 +733,12 @@ class SettingsPageTest extends TestCase
             'public_header_subtitle' => $headerSubtitle,
             'public_borrow_button_label' => $borrowLabel,
             'public_return_button_label' => $returnLabel,
+            'public_nav_logo_file' => $publicNavLogoFile,
+            'public_nav_brand_text' => $publicNavBrandText,
+            'public_nav_brand_subtext' => $publicNavBrandSubtext,
+            'admin_nav_logo_file' => $adminNavLogoFile,
+            'admin_nav_brand_title' => $adminNavBrandTitle,
+            'admin_nav_brand_subtitle' => $adminNavBrandSubtitle,
         ])->assertRedirect(route('admin.settings.index', ['tab' => 'menu-b']));
 
         $this->assertDatabaseHas('settings', [
@@ -745,12 +761,57 @@ class SettingsPageTest extends TestCase
             'setting_value' => $returnLabel,
         ]);
 
+        $publicLogoPath = (string) Setting::query()->where('setting_key', 'public_nav_logo_path')->value('setting_value');
+        $this->assertNotSame('', $publicLogoPath);
+        $this->assertStringStartsWith('branding/public/', $publicLogoPath);
+        Storage::disk('public')->assertExists($publicLogoPath);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'public_nav_brand_text',
+            'setting_value' => $publicNavBrandText,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'public_nav_brand_subtext',
+            'setting_value' => $publicNavBrandSubtext,
+        ]);
+
+        $adminLogoPath = (string) Setting::query()->where('setting_key', 'admin_nav_logo_path')->value('setting_value');
+        $this->assertNotSame('', $adminLogoPath);
+        $this->assertStringStartsWith('branding/admin/', $adminLogoPath);
+        Storage::disk('public')->assertExists($adminLogoPath);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'admin_nav_brand_title',
+            'setting_value' => $adminNavBrandTitle,
+        ]);
+
+        $this->assertDatabaseHas('settings', [
+            'setting_key' => 'admin_nav_brand_subtitle',
+            'setting_value' => $adminNavBrandSubtitle,
+        ]);
+
         $this->get(route('dashboard.public'))
             ->assertOk()
             ->assertSee($headerTitle)
             ->assertSee($headerSubtitle)
             ->assertSee($borrowLabel)
-            ->assertSee($returnLabel);
+            ->assertSee($returnLabel)
+            ->assertSee($publicNavBrandText)
+            ->assertSee($publicNavBrandSubtext)
+            ->assertSee(Storage::url($publicLogoPath), false);
+
+        $this->withSession([
+            'admin_access' => [
+                'user_id' => $admin->id,
+                'user_name' => $admin->name,
+                'granted_at' => now()->getTimestamp(),
+            ],
+        ])->get(route('dashboard.admin'))
+            ->assertOk()
+            ->assertSee($adminNavBrandTitle)
+            ->assertSee($adminNavBrandSubtitle)
+            ->assertSee(Storage::url($adminLogoPath), false);
     }
 
     public function test_admin_can_update_menu_c_camera_preview_settings(): void

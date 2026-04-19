@@ -12,6 +12,12 @@
     <style>
         :root {
             --navbar-font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --admin-nav-gradient: linear-gradient(118deg, #0a2349 0%, #0b5ed7 50%, #1f7ee5 100%);
+            --admin-nav-surface: rgba(7, 20, 46, 0.34);
+            --admin-nav-border: rgba(255, 255, 255, 0.2);
+            --admin-nav-text: #f8fbff;
+            --admin-nav-active-text: #0f2858;
+            --admin-nav-active-bg: linear-gradient(135deg, #ffffff 0%, #eaf2ff 100%);
         }
 
         body { background: #f5f7fb; }
@@ -130,6 +136,13 @@
             justify-content: center;
         }
 
+        .public-brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 0.24rem;
+        }
+
         .public-brand-text {
             font-size: 1.72rem;
             line-height: 1.1;
@@ -140,58 +153,206 @@
         }
 
         .admin-navbar {
-            background: #0b5ed7;
+            position: fixed;
+            overflow: hidden;
+            background: var(--admin-nav-gradient);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 14px 34px rgba(7, 20, 46, 0.34);
+        }
+
+        .admin-navbar::before,
+        .admin-navbar::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .admin-navbar::before {
+            inset: 0;
+            background: linear-gradient(130deg, rgba(255, 255, 255, 0.14), transparent 42%, rgba(255, 255, 255, 0.08));
+            z-index: 0;
+        }
+
+        .admin-navbar::after {
+            width: 260px;
+            height: 260px;
+            top: -150px;
+            right: 8%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
+            z-index: 0;
         }
 
         .admin-nav-shell {
             position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .admin-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-right: 0.2rem;
+            color: #ffffff !important;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+        }
+
+        .admin-brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.33);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 18px rgba(5, 14, 30, 0.25);
+        }
+
+        .admin-brand-mark i {
+            font-size: 0.98rem;
+        }
+
+        .admin-brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 0.24rem;
+        }
+
+        .admin-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.02;
+        }
+
+        .admin-brand-title {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.02em;
+        }
+
+        .admin-brand-subtitle {
+            margin-top: 0.08rem;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.50em;
+            text-transform: uppercase;
+            color: rgba(236, 245, 255, 0.86);
+        }
+
+        .admin-nav-center {
+            align-items: center;
+            gap: 0.34rem;
+            padding: 0.34rem;
+            border-radius: 999px;
+            background: var(--admin-nav-surface);
+            border: 1px solid var(--admin-nav-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
         }
 
         .admin-nav-link {
+            position: relative;
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.94) !important;
-            border-radius: 0.6rem;
-            padding: 0.45rem 0.78rem !important;
-            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 0.88rem;
+            letter-spacing: 0.01em;
+            color: var(--admin-nav-text) !important;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 0.5rem 0.86rem !important;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .admin-nav-link i {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            transition: transform 0.2s ease;
         }
 
         .admin-nav-link:hover,
         .admin-nav-link:focus-visible {
             color: #ffffff !important;
-            background: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(7, 20, 46, 0.24);
+        }
+
+        .admin-nav-link:hover i,
+        .admin-nav-link:focus-visible i {
+            transform: translateX(1px);
         }
 
         .admin-nav-link.active {
-            color: #ffffff !important;
-            background: rgba(0, 0, 0, 0.18);
+            color: var(--admin-nav-active-text) !important;
+            background: var(--admin-nav-active-bg);
+            border-color: rgba(255, 255, 255, 0.56);
+            box-shadow: 0 8px 16px rgba(5, 14, 30, 0.2);
+        }
+
+        .admin-nav-link.active i {
+            color: #0b5ed7;
         }
 
         .admin-login-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            gap: 0.28rem;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 999px;
-            padding: 0.35rem 0.82rem;
-            font-size: 0.86rem;
-            font-weight: 700;
+            padding: 0.24rem 0.68rem;
+            font-size: 0.76rem;
+            font-weight: 100;
             white-space: nowrap;
+            box-shadow: none;
         }
 
         .admin-logout-btn {
             border-radius: 999px;
             font-weight: 700;
+            padding-left: 0.92rem;
+            padding-right: 0.92rem;
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(7, 20, 46, 0.18);
             white-space: nowrap;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .admin-logout-btn:hover,
+        .admin-logout-btn:focus-visible {
+            color: #0f2858;
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+
+        .admin-navbar .navbar-toggler {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 0.85rem;
+            padding: 0.36rem 0.52rem;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-navbar .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(191, 219, 254, 0.42);
         }
 
         @media (min-width: 992px) {
             .admin-navbar .navbar-collapse {
-                min-height: 56px;
+                min-height: 60px;
             }
 
             .admin-nav-center {
@@ -211,25 +372,58 @@
                 padding-top: 84px;
             }
 
+            .admin-brand {
+                gap: 0.55rem;
+            }
+
+            .admin-brand-mark {
+                width: 34px;
+                height: 34px;
+                border-radius: 0.76rem;
+            }
+
+            .admin-brand-title {
+                font-size: 0.94rem;
+            }
+
+            .admin-brand-subtitle {
+                font-size: 0.58rem;
+            }
+
             .admin-navbar .navbar-collapse {
                 margin-top: 0.75rem;
-                padding-top: 0.55rem;
-                border-top: 1px solid rgba(255, 255, 255, 0.22);
+                padding: 0.78rem;
+                border: 1px solid rgba(255, 255, 255, 0.22);
+                border-radius: 1rem;
+                background: rgba(7, 20, 46, 0.42);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(8px);
             }
 
             .admin-nav-center {
-                gap: 0.12rem;
+                width: 100%;
+                border-radius: 0.95rem;
+                gap: 0.2rem;
+                padding: 0.45rem;
             }
 
             .admin-nav-link {
-                padding-left: 0.4rem !important;
-                padding-right: 0.4rem !important;
+                width: 100%;
+                justify-content: flex-start;
+                border-radius: 0.78rem;
+                padding: 0.6rem 0.72rem !important;
             }
 
             .admin-nav-right {
-                margin-top: 0.65rem;
-                padding-top: 0.65rem;
-                border-top: 1px dashed rgba(255, 255, 255, 0.3);
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px dashed rgba(255, 255, 255, 0.34);
+            }
+
+            .admin-login-pill,
+            .admin-logout-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -273,16 +467,68 @@
     $loggedInAdminName = is_array($adminSession)
         ? (string) ($adminSession['user_name'] ?? 'Administrator')
         : 'Administrator';
+
+    $navbarSettingDefaults = [
+        'public_nav_logo_path' => '',
+        'public_nav_brand_text' => 'SIM-IV',
+        'public_nav_brand_subtext' => 'School Inventory System',
+        'admin_nav_logo_path' => '',
+        'admin_nav_brand_title' => 'Inventory Barang',
+        'admin_nav_brand_subtitle' => 'SMK NEGERI 1 CIOMAS',
+    ];
+
+    $storedNavbarSettings = \App\Models\Setting::query()
+        ->whereIn('setting_key', array_keys($navbarSettingDefaults))
+        ->pluck('setting_value', 'setting_key');
+
+    $navbarSettings = $navbarSettingDefaults;
+
+    foreach ($storedNavbarSettings as $key => $value) {
+        if (!is_string($key) || !array_key_exists($key, $navbarSettings)) {
+            continue;
+        }
+
+        if ($value !== null && trim((string) $value) !== '') {
+            $navbarSettings[$key] = trim((string) $value);
+        }
+    }
+
+    $buildLogoUrl = static function (string $logoPath): ?string {
+        $normalizedPath = trim($logoPath);
+
+        if ($normalizedPath === '') {
+            return null;
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($normalizedPath)) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::url($normalizedPath);
+    };
+
+    $publicNavLogoUrl = $buildLogoUrl((string) ($navbarSettings['public_nav_logo_path'] ?? ''));
+    $publicNavBrandText = (string) ($navbarSettings['public_nav_brand_text'] ?? $navbarSettingDefaults['public_nav_brand_text']);
+    $publicNavBrandSubtext = (string) ($navbarSettings['public_nav_brand_subtext'] ?? $navbarSettingDefaults['public_nav_brand_subtext']);
+    $adminNavLogoUrl = $buildLogoUrl((string) ($navbarSettings['admin_nav_logo_path'] ?? ''));
+    $adminNavBrandTitle = (string) ($navbarSettings['admin_nav_brand_title'] ?? $navbarSettingDefaults['admin_nav_brand_title']);
+    $adminNavBrandSubtitle = (string) ($navbarSettings['admin_nav_brand_subtitle'] ?? $navbarSettingDefaults['admin_nav_brand_subtitle']);
 @endphp
 <body class="{{ $isPublicDashboard ? 'public-body has-fixed-nav' : 'has-fixed-nav' }}">
 @if($isPublicDashboard)
     <nav class="navbar fixed-top js-fixed-navbar public-navbar py-2 shadow-sm">
         <div class="container-fluid px-3 px-md-4">
             <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="{{ route('dashboard.public') }}">
-                <span class="public-brand-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+                <span class="public-brand-icon">
+                    @if($publicNavLogoUrl)
+                        <img src="{{ $publicNavLogoUrl }}" alt="Logo Public" class="public-brand-logo">
+                    @else
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    @endif
+                </span>
                 <span class="text-dark fw-bold public-brand-text">
-                    SIM-IV
-                    <span class="text-secondary fw-semibold public-brand-subtext">| School Inventory System</span>
+                    {{ $publicNavBrandText }}
+                    <span class="text-secondary fw-semibold public-brand-subtext">| {{ $publicNavBrandSubtext }}</span>
                 </span>
             </a>
             <div class="d-flex align-items-center gap-2 ms-auto">
@@ -335,7 +581,19 @@
 @else
     <nav class="navbar fixed-top js-fixed-navbar navbar-expand-lg navbar-dark bg-primary shadow-sm admin-navbar">
         <div class="container-fluid px-4 admin-nav-shell">
-            <a class="navbar-brand" href="{{ route('dashboard.public') }}">Inventory Barang</a>
+            <a class="navbar-brand admin-brand" href="{{ route('dashboard.public') }}">
+                <span class="admin-brand-mark">
+                    @if($adminNavLogoUrl)
+                        <img src="{{ $adminNavLogoUrl }}" alt="Logo Admin" class="admin-brand-logo">
+                    @else
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    @endif
+                </span>
+                <span class="admin-brand-text">
+                    <span class="admin-brand-title">{{ $adminNavBrandTitle }}</span>
+                    <span class="admin-brand-subtitle">{{ $adminNavBrandSubtitle }}</span>
+                </span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -382,7 +640,7 @@
                 <div class="admin-nav-right d-flex flex-column flex-lg-row align-items-lg-center gap-2 ms-lg-auto">
                     <span class="admin-login-pill">
                         <i class="fa-solid fa-user-shield"></i>
-                        Login sebagai Admin: {{ $loggedInAdminName }}
+                        : {{ $loggedInAdminName }}
                     </span>
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf

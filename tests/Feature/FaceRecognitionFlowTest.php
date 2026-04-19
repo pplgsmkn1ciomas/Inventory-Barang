@@ -98,6 +98,38 @@ class FaceRecognitionFlowTest extends TestCase
         $this->assertSame(array_fill(0, 128, 0.111111), json_decode((string) $targetUser->face_encoding, true));
     }
 
+    public function test_admin_registration_allows_stale_timestamp_without_face_payload(): void
+    {
+        $this->seed();
+
+        Storage::fake('public');
+
+        $admin = User::query()->where('role', 'admin')->firstOrFail();
+        $targetUser = User::query()->where('role', 'student')->orderBy('id')->firstOrFail();
+
+        $targetUser->update([
+            'face_encoding' => null,
+            'face_registered_at' => now()->subDay(),
+            'face_thumbnail_path' => null,
+        ]);
+
+        $this->withSession($this->adminSession($admin))
+            ->postJson(route('admin.face-register.store'), [
+                'user_id' => $targetUser->id,
+                'image_base64' => $this->sampleFaceImageBase64(),
+                'face_descriptor' => $this->sampleFaceDescriptorJson(0.515151),
+            ])
+            ->assertOk()
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('user.id', $targetUser->id);
+
+        $targetUser->refresh();
+
+        $this->assertNotNull($targetUser->face_registered_at);
+        $this->assertSame(array_fill(0, 128, 0.515151), json_decode((string) $targetUser->face_encoding, true));
+        $this->assertNotNull($targetUser->face_thumbnail_path);
+    }
+
     public function test_admin_registration_rejects_duplicate_face_for_other_user(): void
     {
         $this->seed();

@@ -746,10 +746,8 @@
 
         @media (prefers-reduced-motion: reduce) {
             .public-reminder-marquee {
-                animation: none;
-                padding-left: 0;
-                width: 100%;
-                text-align: center;
+                animation-duration: 30s;
+                animation-timing-function: linear;
             }
         }
 

@@ -23,6 +23,7 @@
 
     @php
         $shouldOpenCreateUserAccordion = old('user_form') === 'store';
+        $hasActiveUserFilters = filled($filters['search']) || filled($filters['role']) || filled($filters['kelas']);
     @endphp
 
     <div class="row g-3">
@@ -127,7 +128,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <form method="GET" action="{{ route('admin.users.index') }}" class="row g-2">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <input type="text" class="form-control" name="search" value="{{ $filters['search'] }}" placeholder="Cari ID/Nama/Kelas/HP...">
                         </div>
                         <div class="col-md-3">
@@ -146,12 +147,21 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-1 d-grid">
-                            <button class="btn btn-outline-secondary" type="submit">Go</button>
+                        <div class="col-md-2 d-grid">
+                            <div class="d-grid gap-2 d-sm-flex">
+                                <button class="btn btn-outline-secondary flex-fill" type="submit">Go</button>
+                                <a
+                                    href="{{ route('admin.users.index') }}"
+                                    class="btn btn-outline-danger flex-fill {{ $hasActiveUserFilters ? '' : 'disabled' }}"
+                                    @if(!$hasActiveUserFilters) aria-disabled="true" tabindex="-1" @endif
+                                >
+                                    Reset
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive user-table-scroll">
                     <table class="table table-sm table-hover mb-0">
                         <thead class="table-light">
                         <tr>
@@ -905,6 +915,20 @@
             text-align: center;
         }
 
+        .user-table-scroll {
+            max-height: min(56vh, 460px);
+            overflow-y: auto;
+            scrollbar-gutter: stable;
+        }
+
+        .user-table-scroll thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--bs-table-bg, #f8f9fa);
+            box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.08);
+        }
+
         .user-col-role {
             text-align: center;
         }
@@ -915,6 +939,12 @@
 
         .user-action-group {
             margin-right: 5px;
+        }
+
+        @media (max-width: 991.98px) {
+            .user-table-scroll {
+                max-height: min(52vh, 380px);
+            }
         }
     </style>
 @endpush

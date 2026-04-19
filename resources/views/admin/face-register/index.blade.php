@@ -14,7 +14,9 @@
     </div>
 
     @php
-        $selectedUserHasFaceData = !empty($selectedUser) && (filled($selectedUser->face_encoding) || filled($selectedUser->face_registered_at) || filled($selectedUser->face_thumbnail_path));
+        $selectedUserFaceEncoding = trim((string) ($selectedUser->face_encoding ?? ''));
+        $selectedUserHasFaceEncoding = $selectedUserFaceEncoding !== '' && $selectedUserFaceEncoding !== '[]';
+        $selectedUserHasFaceData = !empty($selectedUser) && ($selectedUserHasFaceEncoding || filled($selectedUser->face_thumbnail_path));
         $faceCameraSettings = $faceCameraSettings ?? [
             'face_camera_preview_size' => 420,
             'face_camera_capture_size' => 512,
@@ -80,7 +82,7 @@
                                         value="{{ $user->id }}"
                                         @selected((int) $selectedUserId === $user->id)
                                         data-kelas="{{ $user->kelas }}"
-                                        data-face-registered="{{ $user->face_registered_at ? '1' : '0' }}"
+                                        data-face-registered="{{ (int) ($user->has_face_data ?? 0) === 1 ? '1' : '0' }}"
                                     >
                                         {{ $user->name }} ({{ $user->identity_number }})
                                     </option>
@@ -123,6 +125,7 @@
                 <div class="card-body">
                     <div class="face-camera-shell border rounded-3 overflow-hidden mb-3" style="{{ $faceCameraShellStyle }}">
                         <video id="faceRegisterVideo" class="w-100" autoplay playsinline muted></video>
+                        <canvas id="faceRegisterOverlay" class="face-camera-overlay" aria-hidden="true"></canvas>
                     </div>
 
                     <canvas id="faceCaptureCanvas" class="d-none"></canvas>
@@ -139,7 +142,31 @@
 @endsection
 
 @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <style>
+        .ts-wrapper.single .ts-control {
+            min-height: calc(2.25rem + 2px);
+            border-radius: 0.375rem;
+        }
+
+        .ts-dropdown .dropdown-input-wrap {
+            padding: 0.4rem 0.45rem;
+            border-bottom: 1px solid #dee2e6;
+            background: #f8f9fa;
+        }
+
+        .ts-dropdown .dropdown-input {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.5rem;
+        }
+
+        .ts-dropdown .no-results {
+            padding: 0.55rem 0.7rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
         .face-camera-shell {
             width: min(100%, var(--face-camera-preview-size, 420px));
             aspect-ratio: var(--face-camera-frame-ratio, 1 / 1);
@@ -165,6 +192,15 @@
             background: var(--face-camera-background, #111111);
         }
 
+        #faceRegisterOverlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
         #faceCapturePreview {
             aspect-ratio: var(--face-camera-frame-ratio, 1 / 1);
             object-fit: cover;
@@ -175,6 +211,7 @@
 
 @push('scripts')
     @include('partials.face-recognition-assets')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var userSelect = document.getElementById('faceUserId');
@@ -184,6 +221,7 @@
             var captureButton = document.getElementById('captureFaceBtn');
             var submitButton = document.getElementById('submitFaceRegistrationBtn');
             var video = document.getElementById('faceRegisterVideo');
+            var overlayCanvas = document.getElementById('faceRegisterOverlay');
             var canvas = document.getElementById('faceCaptureCanvas');
             var previewImage = document.getElementById('faceCapturePreview');
             var previewPlaceholder = document.getElementById('faceCapturePlaceholder');
@@ -196,6 +234,36 @@
             var stream = null;
             var capturedImageBase64 = '';
             var capturedFaceDescriptor = '';
+            var previewDetectionCanvas = document.createElement('canvas');
+            var previewDetectionIntervalId = null;
+            var previewDetectionBusy = false;
+
+            function initializeUserSearchableSelect() {
+                if (!userSelect || typeof window.TomSelect === 'undefined' || userSelect.tomselect) {
+                    return;
+                }
+
+                new window.TomSelect(userSelect, {
+                    create: false,
+                    allowEmptyOption: true,
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                    searchField: ['text'],
+                    sortField: [
+                        {
+                            field: '$order',
+                        },
+                    ],
+                    closeAfterSelect: true,
+                    placeholder: 'Cari nama atau NISN pengguna...',
+                    render: {
+                        no_results: function () {
+                            return '<div class="no-results">Data pengguna tidak ditemukan.</div>';
+                        },
+                    },
+                });
+            }
 
             function getFaceCameraFrameRatio() {
                 return FACE_CAMERA_FRAME_MODE === 'wide' ? 4 / 3 : 1;
@@ -296,7 +364,200 @@
                 alertBox.textContent = message;
             }
 
+            function getFaceBoxStroke(status) {
+                if (status === 'ok') {
+                    return '#22c55e';
+                }
+
+                if (status === 'multiple_faces') {
+                    return '#f59e0b';
+                }
+
+                return '#ef4444';
+            }
+
+            function clearFaceBoundingOverlay() {
+                if (!overlayCanvas) {
+                    return;
+                }
+
+                var overlayContext = overlayCanvas.getContext('2d');
+
+                if (!overlayContext) {
+                    return;
+                }
+
+                overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            }
+
+            function syncFaceBoundingOverlaySize(referenceWidth, referenceHeight) {
+                if (!overlayCanvas) {
+                    return {
+                        width: 0,
+                        height: 0,
+                    };
+                }
+
+                var displayWidth = Math.max(1, Math.round(overlayCanvas.clientWidth || referenceWidth || 1));
+                var displayHeight = Math.max(1, Math.round(overlayCanvas.clientHeight || referenceHeight || 1));
+                var devicePixelRatio = Math.max(1, Number(window.devicePixelRatio) || 1);
+                var targetWidth = Math.max(1, Math.round(displayWidth * devicePixelRatio));
+                var targetHeight = Math.max(1, Math.round(displayHeight * devicePixelRatio));
+
+                if (overlayCanvas.width !== targetWidth || overlayCanvas.height !== targetHeight) {
+                    overlayCanvas.width = targetWidth;
+                    overlayCanvas.height = targetHeight;
+                }
+
+                return {
+                    width: targetWidth,
+                    height: targetHeight,
+                };
+            }
+
+            function drawFaceScanningGuide(context, canvasWidth, canvasHeight, status) {
+                if (!context || canvasWidth <= 0 || canvasHeight <= 0) {
+                    return;
+                }
+
+                var guideWidth = canvasWidth * 0.56;
+                var guideHeight = canvasHeight * 0.72;
+                var guideLeft = (canvasWidth - guideWidth) / 2;
+                var guideTop = (canvasHeight - guideHeight) / 2;
+                var guideStroke = status === 'invalid_descriptor' ? '#ef4444' : 'rgba(255, 255, 255, 0.82)';
+
+                context.save();
+                context.lineWidth = Math.max(2, Math.round(canvasWidth * 0.008));
+                context.strokeStyle = guideStroke;
+                context.setLineDash([12, 10]);
+                context.strokeRect(guideLeft, guideTop, guideWidth, guideHeight);
+                context.restore();
+            }
+
+            function drawFaceBoundingOverlay(captureResult) {
+                if (!overlayCanvas) {
+                    return;
+                }
+
+                if (!captureResult || !captureResult.captureDimensions) {
+                    clearFaceBoundingOverlay();
+
+                    return;
+                }
+
+                var overlayContext = overlayCanvas.getContext('2d');
+
+                if (!overlayContext) {
+                    return;
+                }
+
+                var captureWidth = Math.max(1, Math.round(Number(captureResult.captureDimensions.width) || 1));
+                var captureHeight = Math.max(1, Math.round(Number(captureResult.captureDimensions.height) || 1));
+                var overlaySize = syncFaceBoundingOverlaySize(captureWidth, captureHeight);
+                var scaleX = overlaySize.width / captureWidth;
+                var scaleY = overlaySize.height / captureHeight;
+                var detectedBoxes = captureResult && Array.isArray(captureResult.detectedBoxes)
+                    ? captureResult.detectedBoxes
+                    : [];
+
+                overlayContext.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+                if (!detectedBoxes.length) {
+                    drawFaceScanningGuide(overlayContext, overlayCanvas.width, overlayCanvas.height, captureResult.status);
+
+                    return;
+                }
+
+                var strokeStyle = getFaceBoxStroke(captureResult.status);
+
+                detectedBoxes.forEach(function (box) {
+                    var left = Number(box.x);
+                    var top = Number(box.y);
+                    var width = Number(box.width);
+                    var height = Number(box.height);
+
+                    if (!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) {
+                        return;
+                    }
+
+                    if (width <= 1 && height <= 1) {
+                        left = left * captureWidth;
+                        top = top * captureHeight;
+                        width = width * captureWidth;
+                        height = height * captureHeight;
+                    }
+
+                    left = left * scaleX;
+                    top = top * scaleY;
+                    width = width * scaleX;
+                    height = height * scaleY;
+
+                    left = Math.max(0, Math.min(overlayCanvas.width, left));
+                    top = Math.max(0, Math.min(overlayCanvas.height, top));
+                    width = Math.max(1, Math.min(overlayCanvas.width - left, width));
+                    height = Math.max(1, Math.min(overlayCanvas.height - top, height));
+
+                    overlayContext.lineWidth = Math.max(2, Math.round(overlayCanvas.width * 0.009));
+                    overlayContext.strokeStyle = strokeStyle;
+                    overlayContext.setLineDash([]);
+                    overlayContext.strokeRect(left, top, width, height);
+                });
+            }
+
+            function stopLiveBoundingPreview() {
+                if (previewDetectionIntervalId) {
+                    window.clearInterval(previewDetectionIntervalId);
+                    previewDetectionIntervalId = null;
+                }
+
+                previewDetectionBusy = false;
+                clearFaceBoundingOverlay();
+            }
+
+            async function runLiveBoundingPreview() {
+                if (previewDetectionBusy || !stream || !video || video.readyState < 2 || !window.InventoryFaceRecognition) {
+                    return;
+                }
+
+                previewDetectionBusy = true;
+
+                try {
+                    var detectionResult = await window.InventoryFaceRecognition.captureFaceData(video, previewDetectionCanvas, {
+                        captureSize: FACE_CAPTURE_SIZE,
+                        frameMode: FACE_CAMERA_FRAME_MODE,
+                        horizontalShift: FACE_CAMERA_HORIZONTAL_SHIFT,
+                        verticalShift: FACE_CAMERA_VERTICAL_SHIFT,
+                        includeImage: false,
+                        detectorInputSize: 320,
+                        scoreThreshold: 0.45,
+                        enableFallbackDetection: true,
+                        fallbackDetectorInputSize: 256,
+                        fallbackScoreThreshold: 0.35,
+                    });
+
+                    drawFaceBoundingOverlay(detectionResult);
+                } catch (error) {
+                    clearFaceBoundingOverlay();
+                } finally {
+                    previewDetectionBusy = false;
+                }
+            }
+
+            function startLiveBoundingPreview() {
+                stopLiveBoundingPreview();
+
+                if (!overlayCanvas || !window.InventoryFaceRecognition) {
+                    return;
+                }
+
+                syncFaceBoundingOverlaySize(video ? video.videoWidth : 0, video ? video.videoHeight : 0);
+                runLiveBoundingPreview();
+                previewDetectionIntervalId = window.setInterval(runLiveBoundingPreview, 600);
+            }
+
             function stopCamera() {
+                stopLiveBoundingPreview();
+
                 if (stream) {
                     stream.getTracks().forEach(function (track) {
                         track.stop();
@@ -382,6 +643,8 @@
                 }
 
                 try {
+                    stopCamera();
+
                     var frameRatio = getFaceCameraFrameRatio();
                     var cameraBaseResolution = Math.max(640, FACE_CAPTURE_SIZE);
 
@@ -397,11 +660,18 @@
 
                     video.srcObject = stream;
 
+                    if (video.play) {
+                        video.play().catch(function () {
+                            return;
+                        });
+                    }
+
                     if (window.InventoryFaceRecognition) {
                         setAlert('Memuat model face recognition...', 'info');
                         await window.InventoryFaceRecognition.loadFaceApiModels();
                     }
 
+                    startLiveBoundingPreview();
                     captureButton.disabled = false;
                     setAlert('Kamera aktif. Silakan posisikan wajah lalu klik Capture.', 'info');
                 } catch (error) {
@@ -436,6 +706,8 @@
                         detectorInputSize: 416,
                         imageQuality: 0.85,
                     });
+
+                    drawFaceBoundingOverlay(captureResult);
 
                     if (captureResult.status === 'no_face') {
                         setAlert('Tidak ada wajah terdeteksi. Pastikan wajah berada di tengah kamera.', 'warning');
@@ -571,6 +843,7 @@
                 userSelect.addEventListener('change', updateSelectedUserInfo);
                 userSelect.addEventListener('change', resetCapturedFace);
                 updateSelectedUserInfo();
+                initializeUserSearchableSelect();
             }
 
             if (startButton) {
@@ -588,13 +861,7 @@
             }
 
             window.addEventListener('beforeunload', function () {
-                if (!stream) {
-                    return;
-                }
-
-                stream.getTracks().forEach(function (track) {
-                    track.stop();
-                });
+                stopCamera();
             });
         });
     </script>

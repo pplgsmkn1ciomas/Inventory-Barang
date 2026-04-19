@@ -11,6 +11,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -56,6 +57,12 @@ class SettingController extends Controller
         'public_running_text_speed' => '15',
         'public_running_text_font_size' => '17',
         'public_running_text_font_family' => 'system',
+        'public_nav_logo_path' => '',
+        'public_nav_brand_text' => 'SIM-IV',
+        'public_nav_brand_subtext' => 'School Inventory System',
+        'admin_nav_logo_path' => '',
+        'admin_nav_brand_title' => 'Inventory Barang',
+        'admin_nav_brand_subtitle' => 'SMK NEGERI 1 CIOMAS',
         'public_header_title' => 'Dashboard Inventaris',
         'public_header_subtitle' => 'Sistem Peminjaman & Pengembalian Aset Sekolah',
         'public_borrow_button_label' => 'Peminjaman Barang',
@@ -332,13 +339,37 @@ class SettingController extends Controller
             'public_header_subtitle' => ['required', 'string', 'max:200'],
             'public_borrow_button_label' => ['required', 'string', 'max:80'],
             'public_return_button_label' => ['required', 'string', 'max:80'],
+            'public_nav_logo_file' => ['nullable', 'file', 'mimes:png', 'max:2048'],
+            'public_nav_brand_text' => ['required', 'string', 'max:60'],
+            'public_nav_brand_subtext' => ['required', 'string', 'max:120'],
+            'admin_nav_logo_file' => ['nullable', 'file', 'mimes:png', 'max:2048'],
+            'admin_nav_brand_title' => ['required', 'string', 'max:80'],
+            'admin_nav_brand_subtitle' => ['required', 'string', 'max:140'],
         ]);
+
+        $existingSettingValues = $this->getSettingValues();
+        $publicNavLogoPath = $this->replaceNavbarLogo(
+            $request->file('public_nav_logo_file'),
+            'branding/public',
+            $existingSettingValues['public_nav_logo_path'] ?? null,
+        );
+        $adminNavLogoPath = $this->replaceNavbarLogo(
+            $request->file('admin_nav_logo_file'),
+            'branding/admin',
+            $existingSettingValues['admin_nav_logo_path'] ?? null,
+        );
 
         $this->saveSettings([
             'public_header_title' => trim((string) $validated['public_header_title']),
             'public_header_subtitle' => trim((string) $validated['public_header_subtitle']),
             'public_borrow_button_label' => trim((string) $validated['public_borrow_button_label']),
             'public_return_button_label' => trim((string) $validated['public_return_button_label']),
+            'public_nav_logo_path' => (string) ($publicNavLogoPath ?? ''),
+            'public_nav_brand_text' => trim((string) $validated['public_nav_brand_text']),
+            'public_nav_brand_subtext' => trim((string) $validated['public_nav_brand_subtext']),
+            'admin_nav_logo_path' => (string) ($adminNavLogoPath ?? ''),
+            'admin_nav_brand_title' => trim((string) $validated['admin_nav_brand_title']),
+            'admin_nav_brand_subtitle' => trim((string) $validated['admin_nav_brand_subtitle']),
         ]);
 
         $this->logActivity(
@@ -349,6 +380,10 @@ class SettingController extends Controller
                 'header_title' => trim((string) $validated['public_header_title']),
                 'borrow_button_label' => trim((string) $validated['public_borrow_button_label']),
                 'return_button_label' => trim((string) $validated['public_return_button_label']),
+                'public_nav_brand_text' => trim((string) $validated['public_nav_brand_text']),
+                'admin_nav_brand_title' => trim((string) $validated['admin_nav_brand_title']),
+                'public_nav_logo_uploaded' => $request->hasFile('public_nav_logo_file'),
+                'admin_nav_logo_uploaded' => $request->hasFile('admin_nav_logo_file'),
             ],
         );
 
@@ -614,6 +649,23 @@ class SettingController extends Controller
     private function saveSetting(string $key, string $value): void
     {
         $this->saveSettings([$key => $value]);
+    }
+
+    private function replaceNavbarLogo(?UploadedFile $logoFile, string $directory, ?string $previousPath): ?string
+    {
+        $normalizedPreviousPath = $previousPath !== null ? trim($previousPath) : null;
+
+        if ($logoFile === null) {
+            return $normalizedPreviousPath !== '' ? $normalizedPreviousPath : null;
+        }
+
+        $newPath = $logoFile->store($directory, 'public');
+
+        if ($normalizedPreviousPath !== null && $normalizedPreviousPath !== '' && $normalizedPreviousPath !== $newPath) {
+            Storage::disk('public')->delete($normalizedPreviousPath);
+        }
+
+        return $newPath;
     }
 
     /**

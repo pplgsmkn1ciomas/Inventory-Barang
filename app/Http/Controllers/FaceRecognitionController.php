@@ -24,8 +24,17 @@ class FaceRecognitionController extends Controller
         $faceCameraSettings = $this->resolveFaceCameraSettings();
 
         $users = User::query()
+            ->select([
+                'id',
+                'name',
+                'identity_number',
+                'kelas',
+                'face_registered_at',
+                'face_thumbnail_path',
+            ])
+            ->selectRaw("CASE WHEN face_thumbnail_path IS NOT NULL OR (face_encoding IS NOT NULL AND TRIM(face_encoding) <> '' AND TRIM(face_encoding) <> '[]') THEN 1 ELSE 0 END as has_face_data")
             ->orderBy('name')
-            ->get(['id', 'name', 'identity_number', 'kelas', 'face_registered_at', 'face_thumbnail_path']);
+            ->get();
 
         $selectedUserId = (int) $request->query('user_id', 0);
         $selectedUser = $selectedUserId > 0
@@ -175,7 +184,18 @@ class FaceRecognitionController extends Controller
 
     private function hasRegisteredFace(User $user): bool
     {
-        return filled($user->face_encoding) || filled($user->face_registered_at) || filled($user->face_thumbnail_path);
+        return $this->hasFaceEncoding($user->face_encoding) || filled($user->face_thumbnail_path);
+    }
+
+    private function hasFaceEncoding(?string $faceEncoding): bool
+    {
+        if ($faceEncoding === null) {
+            return false;
+        }
+
+        $normalizedEncoding = trim($faceEncoding);
+
+        return $normalizedEncoding !== '' && $normalizedEncoding !== '[]';
     }
 
     private function storeFaceThumbnail(User $user, string $imageBase64): ?string
