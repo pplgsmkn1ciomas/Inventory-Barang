@@ -148,7 +148,7 @@
                         $barcodeDownloadValue = (string) ($asset->barcode ?: $asset->serial_number);
                     @endphp
                     <tr>
-                        <td>{{ $assets->firstItem() + $loop->index }}</td>
+                        <td>{{ $loop->iteration }}</td>
                         <td><span class="fw-medium">{{ $asset->category }}</span></td>
                         <td>{{ $asset->brand }}</td>
                         <td>{{ $asset->model }}</td>
@@ -347,10 +347,6 @@
                 </div>
             </div>
         @endforeach
-
-        @if($assets->hasPages())
-            <div class="card-footer bg-white">{{ $assets->links('pagination::bootstrap-5') }}</div>
-        @endif
     </div>
     </div>
 
@@ -658,18 +654,28 @@
         }
 
         .asset-table-card {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
         }
 
         .asset-table-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: 380px;
+            overflow-y: auto;
             overflow-x: auto;
-            overflow-y: visible;
         }
 
         .asset-table-card .table thead th {
             position: sticky;
             top: 0;
             z-index: 3;
+        }
+
+        .asset-table-card .card-footer {
+            flex-shrink: 0;
         }
 
         .asset-barcode-wrap {
@@ -770,12 +776,32 @@
 
         .asset-action-group {
             justify-content: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
+        .asset-table-card .table th:last-child,
+        .asset-table-card .table td:last-child {
+            min-width: 245px;
         }
 
         .asset-modal-header {
             background: #0b5ed7;
             color: #ffffff;
+        }
+
+        @media (max-width: 1199.98px) {
+            .asset-page-shell {
+                height: auto !important;
+            }
+
+            .asset-table-card {
+                min-height: 360px;
+            }
+
+            .asset-table-scroll {
+                max-height: 320px;
+            }
         }
     </style>
 @endpush
@@ -798,6 +824,23 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            var assetPageShell = document.getElementById('assetPageShell');
+
+            var syncAssetPageShellHeight = function () {
+                if (!assetPageShell) {
+                    return;
+                }
+
+                document.body.classList.remove('asset-page-static');
+                assetPageShell.style.height = 'auto';
+            };
+
+            if (assetPageShell) {
+                syncAssetPageShellHeight();
+                window.addEventListener('resize', syncAssetPageShellHeight);
+                document.addEventListener('closed.bs.alert', syncAssetPageShellHeight);
+            }
+
             var hasJsBarcode = typeof JsBarcode === 'function';
 
             var renderBarcodeToSvg = function (barcodeNode, value, options) {

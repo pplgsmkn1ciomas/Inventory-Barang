@@ -44,7 +44,7 @@ class AssetController extends Controller
             $query->where('status', $request->string('status'));
         }
 
-        $assets = $query->latest('id')->paginate(20)->withQueryString();
+        $assets = $query->latest('id')->get();
         $allAssets = Asset::query()->get();
         $optionValues = $this->assetOptionService->getOptions();
 
