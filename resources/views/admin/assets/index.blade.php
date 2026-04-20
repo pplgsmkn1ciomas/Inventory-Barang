@@ -349,7 +349,7 @@
         @endforeach
 
         @if($assets->hasPages())
-            <div class="card-footer bg-white">{{ $assets->links() }}</div>
+            <div class="card-footer bg-white">{{ $assets->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
     </div>
@@ -549,14 +549,6 @@
 
 @push('styles')
     <style>
-        body.asset-page-static {
-            overflow: hidden;
-        }
-
-        body.asset-page-static main.container-fluid.px-4.py-3 {
-            overflow: hidden;
-        }
-
         .asset-page-shell {
             display: flex;
             flex-direction: column;
@@ -666,27 +658,18 @@
         }
 
         .asset-table-card {
-            display: flex;
-            flex-direction: column;
-            flex: 1 1 auto;
-            min-height: 0;
+            display: block;
         }
 
         .asset-table-scroll {
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow-y: auto;
             overflow-x: auto;
+            overflow-y: visible;
         }
 
         .asset-table-card .table thead th {
             position: sticky;
             top: 0;
             z-index: 3;
-        }
-
-        .asset-table-card .card-footer {
-            flex-shrink: 0;
         }
 
         .asset-barcode-wrap {
@@ -815,26 +798,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var assetPageShell = document.getElementById('assetPageShell');
-
-            var syncAssetPageShellHeight = function () {
-                if (!assetPageShell) {
-                    return;
-                }
-
-                var shellTop = assetPageShell.getBoundingClientRect().top;
-                var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-                var availableHeight = Math.max(440, viewportHeight - shellTop - 12);
-                assetPageShell.style.height = availableHeight + 'px';
-            };
-
-            if (assetPageShell) {
-                document.body.classList.add('asset-page-static');
-                syncAssetPageShellHeight();
-                window.addEventListener('resize', syncAssetPageShellHeight);
-                document.addEventListener('closed.bs.alert', syncAssetPageShellHeight);
-            }
-
             var hasJsBarcode = typeof JsBarcode === 'function';
 
             var renderBarcodeToSvg = function (barcodeNode, value, options) {

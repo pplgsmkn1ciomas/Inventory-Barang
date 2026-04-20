@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-0"></div>
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
         <div>
             <h4 class="mb-1">Data Pengguna</h4>
             <p class="text-muted mb-0">Pengelolaan admin, guru, dan siswa.</p>
@@ -398,7 +398,7 @@
                     </table>
                 </div>
                 @if($users->hasPages())
-                    <div class="card-footer bg-white">{{ $users->links() }}</div>
+                    <div class="card-footer bg-white">{{ $users->links('pagination::bootstrap-5') }}</div>
                 @endif
             </div>
         </div>
