@@ -45,7 +45,7 @@ class UserController extends Controller
             $query->where('kelas', $request->string('kelas'));
         }
 
-        $users = $query->latest('id')->paginate(20)->withQueryString();
+        $users = $query->latest('id')->get();
         $roleOptions = collect($this->resolveRoleOptions());
         $kelasOptions = collect($this->resolveKelasOptions());
         $totalUsers = User::count();

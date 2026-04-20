@@ -177,7 +177,7 @@
                         <tbody>
                         @forelse($users as $user)
                             <tr>
-                                <td class="user-col-no">{{ $users->firstItem() + $loop->index }}</td>
+                                <td class="user-col-no">{{ $loop->iteration }}</td>
                                 <td>{{ $user->identity_number }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->kelas }}</td>
@@ -397,9 +397,6 @@
                         </tbody>
                     </table>
                 </div>
-                @if($users->hasPages())
-                    <div class="card-footer bg-white">{{ $users->links('pagination::bootstrap-5') }}</div>
-                @endif
             </div>
         </div>
     </div>
