@@ -663,9 +663,27 @@
         .asset-table-scroll {
             flex: 1 1 auto;
             min-height: 0;
-            max-height: 380px;
             overflow-y: auto;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .asset-table-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .asset-table-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .asset-table-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .asset-table-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .asset-table-card .table thead th {
@@ -790,7 +808,17 @@
             color: #ffffff;
         }
 
-        @media (max-width: 1199.98px) {
+        @media (min-width: 992px) {
+            .asset-table-card {
+                min-height: 480px;
+            }
+
+            .asset-table-scroll {
+                max-height: clamp(450px, 60vh, 650px);
+            }
+        }
+
+        @media (max-width: 991.98px) {
             .asset-page-shell {
                 height: auto !important;
             }
@@ -800,7 +828,7 @@
             }
 
             .asset-table-scroll {
-                max-height: 320px;
+                max-height: 340px;
             }
         }
     </style>

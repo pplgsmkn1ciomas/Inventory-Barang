@@ -168,7 +168,7 @@
         </div>
 
         <div class="col-12 admin-dashboard-right">
-            <div class="d-flex flex-column gap-3">
+            <div class="d-flex flex-column gap-3 admin-dashboard-right-shell">
                 <div class="row g-2 admin-preview-switch" role="tablist" aria-label="Preview tabel dashboard admin">
                     <div class="col-12 col-sm-6">
                         <button type="button" class="btn admin-preview-btn active w-100" id="previewStockTab"
@@ -233,7 +233,7 @@
                                 <span>Barang Sedang Dipinjam</span>
                                 <span class="badge text-bg-warning">{{ number_format($borrowedAssets) }}</span>
                             </div>
-                            <div class="table-responsive">
+                            <div class="table-responsive stock-laptop-table-wrap">
                                 <table class="table table-sm table-hover mb-0">
                                     <thead class="table-light">
                                         <tr>
@@ -450,7 +450,7 @@
         }
 
         .admin-dashboard-split {
-            align-items: flex-start;
+            align-items: stretch;
         }
 
         .admin-kpi-stack .col {
@@ -458,6 +458,10 @@
         }
 
         @media (min-width: 992px) {
+            .admin-dashboard-split {
+                align-items: stretch;
+            }
+
             .admin-dashboard-left {
                 flex: 0 0 30%;
                 max-width: 30%;
@@ -466,6 +470,57 @@
             .admin-dashboard-right {
                 flex: 0 0 70%;
                 max-width: 70%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .admin-dashboard-right-shell {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+            }
+
+            .admin-preview-switch {
+                flex-shrink: 0;
+            }
+
+            .admin-dashboard-right .tab-content {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+
+            .admin-dashboard-right .tab-pane {
+                height: 100%;
+            }
+
+            .admin-dashboard-right .tab-pane.active {
+                display: flex !important;
+                flex-direction: column;
+                flex: 1 1 auto;
+                min-height: 0;
+            }
+
+            .admin-table-card {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                height: 100%;
+            }
+
+            .admin-table-card .card-header {
+                flex-shrink: 0;
+            }
+
+            .stock-laptop-table-wrap {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
         }
 
@@ -532,9 +587,43 @@
         .stock-laptop-table-wrap {
             width: 100%;
             max-width: 100%;
+            max-height: 480px;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .stock-laptop-table-wrap thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: #f8f9fa;
+            box-shadow: inset 0 -1px 0 #dee2e6;
+        }
+
+        .stock-laptop-table-wrap::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .stock-laptop-table-wrap::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .stock-laptop-table-wrap::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .stock-laptop-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         @media (max-width: 991.98px) {
+            .stock-laptop-table-wrap {
+                max-height: 360px;
+            }
+
             .admin-kpi-card {
                 min-height: 162px;
             }
@@ -548,4 +637,57 @@
             }
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var syncAdminDashboardHeight = function () {
+                var tableWraps = document.querySelectorAll('.stock-laptop-table-wrap');
+                if (window.innerWidth < 992) {
+                    tableWraps.forEach(function (el) {
+                        el.style.height = '';
+                        el.style.maxHeight = '360px';
+                    });
+                    return;
+                }
+
+                var leftCol = document.querySelector('.admin-dashboard-left');
+                var switchRow = document.querySelector('.admin-preview-switch');
+                var cardHeaders = document.querySelectorAll('.admin-table-card .card-header');
+
+                if (!leftCol) {
+                    return;
+                }
+
+                var leftHeight = leftCol.offsetHeight;
+                var switchHeight = switchRow ? switchRow.offsetHeight : 58;
+                var gap = 16;
+                var borderCompensation = 2;
+
+                cardHeaders.forEach(function (header) {
+                    var headerHeight = header.offsetHeight || 49;
+                    var targetTableHeight = leftHeight - switchHeight - gap - headerHeight - borderCompensation;
+                    var tableWrap = header.nextElementSibling;
+                    if (tableWrap && tableWrap.classList.contains('stock-laptop-table-wrap')) {
+                        var finalHeight = Math.max(220, targetTableHeight);
+                        tableWrap.style.height = finalHeight + 'px';
+                        tableWrap.style.maxHeight = finalHeight + 'px';
+                    }
+                });
+            };
+
+            syncAdminDashboardHeight();
+            window.addEventListener('resize', syncAdminDashboardHeight);
+
+            var leftCol = document.querySelector('.admin-dashboard-left');
+            if (leftCol && window.ResizeObserver) {
+                new ResizeObserver(syncAdminDashboardHeight).observe(leftCol);
+            }
+
+            document.querySelectorAll('.admin-preview-btn').forEach(function (btn) {
+                btn.addEventListener('shown.bs.tab', syncAdminDashboardHeight);
+            });
+        });
+    </script>
 @endpush

@@ -102,6 +102,8 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $this->call(AvailableStockSeeder::class);
+
         Setting::query()->upsert([
             ['setting_key' => 'running_text', 'setting_value' => 'Selamat datang di Sistem Inventaris Laravel'],
             ['setting_key' => 'timezone', 'setting_value' => 'Asia/Jakarta'],
