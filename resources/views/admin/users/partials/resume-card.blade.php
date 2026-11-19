@@ -32,8 +32,8 @@
                     </div>
 
                     <div class="user-summary-stats">
-                        <div class="row g-2.5">
-                            <div class="col-12 col-md-4">
+                        <div class="row g-2.5 user-summary-stats-row">
+                            <div class="col-12 col-md-4 user-summary-stat-col">
                                 <div class="user-summary-stat user-summary-stat-primary h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="user-summary-stat-label">Total Pengguna</div>
@@ -48,7 +48,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4 user-summary-stat-col">
                                 <div class="user-summary-stat user-summary-stat-info h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="user-summary-stat-label">Kategori Role</div>
@@ -84,7 +84,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4 user-summary-stat-col">
                                 <div class="user-summary-stat user-summary-stat-success h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="user-summary-stat-label">Kelas</div>

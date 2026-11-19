@@ -30,18 +30,18 @@
         <div class="col-xl-4 col-lg-4 col-md-6">
             <div class="card asset-stat-card h-100">
                 <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="asset-stat-label">Total Barang</div>
                         <span class="asset-stat-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
                     </div>
                     <div class="asset-stat-value">{{ number_format($totalAssets) }}</div>
-                    <div class="asset-stat-hint mt-2">Jumlah seluruh aset yang sudah terdaftar.</div>
+                    <div class="asset-stat-hint mt-1">Jumlah seluruh aset yang sudah terdaftar.</div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-4 col-lg-4 col-md-6">
-            <div class="card asset-list-card h-100">
+            <div class="card asset-list-card assets-list-card h-100">
                 <div class="card-header fw-semibold asset-summary-header asset-summary-header-category">Jumlah Berdasarkan Kategori</div>
                 <div class="card-body asset-list-scroll py-2">
                     @forelse($categoryCounts as $category => $count)
@@ -57,7 +57,7 @@
         </div>
 
         <div class="col-xl-4 col-lg-4 col-md-12">
-            <div class="card asset-list-card h-100">
+            <div class="card asset-list-card assets-list-card h-100">
                 <div class="card-header fw-semibold d-flex justify-content-between align-items-center asset-summary-header asset-summary-header-laptop">
                     <span>Laptop per Merk</span>
                     <span class="badge rounded-pill text-bg-primary">{{ number_format($totalLaptopAssets) }}</span>
@@ -559,26 +559,39 @@
 
         .asset-stat-card,
         .asset-list-card,
+        .assets-list-card,
         .asset-table-card {
             border-radius: 0.9rem;
             box-shadow: 0 8px 22px rgba(31, 50, 81, 0.08);
         }
 
         .asset-list-card,
+        .assets-list-card,
         .asset-table-card {
             border: 1px solid #dbe3ef;
+        }
+
+        .asset-stat-card,
+        .asset-list-card,
+        .assets-list-card {
+            height: 100%;
+            min-height: 140px;
+            max-height: 140px;
         }
 
         .asset-stat-card {
             border: 0;
             color: #ffffff;
-            min-height: 176px;
             background: linear-gradient(315deg, #8fb8ff 0%, #3f7bf0 48%, #173f99 100%);
             box-shadow: 0 10px 26px rgba(15, 23, 42, 0.15);
         }
 
         .asset-stat-card .card-body {
-            padding: 1.1rem 1.1rem 1.2rem;
+            padding: 0.85rem 1.1rem 0.9rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .asset-stat-label {
@@ -590,42 +603,87 @@
         }
 
         .asset-stat-value {
-            font-size: clamp(2rem, 1.3vw + 1.35rem, 2.6rem);
+            font-size: clamp(2rem, 1.3vw + 1.35rem, 2.5rem);
             line-height: 1;
             font-weight: 800;
             letter-spacing: 0.02em;
         }
 
         .asset-stat-hint {
-            font-size: 0.86rem;
+            font-size: 0.82rem;
             font-weight: 500;
-            line-height: 1.35;
+            line-height: 1.3;
             opacity: 0.9;
         }
 
         .asset-stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 0.8rem;
+            width: 38px;
+            height: 38px;
+            border-radius: 0.75rem;
             background: rgba(255, 255, 255, 0.22);
             border: 1px solid rgba(255, 255, 255, 0.38);
             color: #ffffff;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.95rem;
             backdrop-filter: blur(1px);
         }
 
-        .asset-list-scroll {
-            max-height: none;
-            overflow: visible;
+        .asset-list-card,
+        .assets-list-card {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .asset-list-card .card-header,
+        .assets-list-card .card-header {
+            flex-shrink: 0;
+            padding: 0.52rem 1rem;
+            font-size: 0.82rem;
+            line-height: 1.25;
+        }
+
+        .asset-list-scroll,
+        .assets-list-card .card-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: 98px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-inline: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        .asset-list-scroll::-webkit-scrollbar,
+        .assets-list-card .card-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .asset-list-scroll::-webkit-scrollbar-track,
+        .assets-list-card .card-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 999px;
+        }
+
+        .asset-list-scroll::-webkit-scrollbar-thumb,
+        .assets-list-card .card-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .asset-list-scroll::-webkit-scrollbar-thumb:hover,
+        .assets-list-card .card-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .asset-list-item {
-            padding: 0.42rem 0;
+            padding: 0.32rem 0;
             border-bottom: 1px solid #edf2f8;
-            font-size: 0.94rem;
+            font-size: 0.88rem;
         }
 
         .asset-list-item:last-child {

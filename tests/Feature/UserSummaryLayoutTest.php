@@ -53,8 +53,19 @@ class UserSummaryLayoutTest extends TestCase
         $response->assertSee('Data Wajah Siap');
 
         // 5. Verify no extra user-summary-stats outside hero
-        $heroEnd = strpos($content, 'accordion user-create-accordion');
+        $heroEnd = strpos($content, 'row g-3');
         $afterHero = substr($content, $overviewEnd, $heroEnd - $overviewEnd);
         $this->assertStringNotContainsString('user-summary-stats px-4 pb-4', $afterHero);
+
+        // 6. Verify modal and button for Tambah Pengguna
+        $this->assertStringContainsString('data-bs-target="#createUserModal"', $content);
+        $this->assertStringContainsString('id="createUserModal"', $content);
+
+        // 7. Verify responsive classes and margins for user-summary-stats
+        $this->assertStringContainsString('user-summary-stats-row', $content);
+        $this->assertStringContainsString('user-summary-stat-col', $content);
+        $this->assertStringContainsString('.user-summary-stats-row', $content);
+        $this->assertStringContainsString('@media (max-width: 1199.98px)', $content);
+        $this->assertStringContainsString('margin-top: 1.25rem;', $content);
     }
 }

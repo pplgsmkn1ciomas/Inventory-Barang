@@ -7,6 +7,9 @@
             <p class="text-muted mb-0">Pengelolaan admin, guru, dan siswa.</p>
         </div>
         <div class="d-flex flex-wrap gap-2 justify-content-end">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="fa-solid fa-user-plus me-1"></i>Tambah Pengguna
+            </button>
             <a href="{{ route('admin.users.export', ['template' => 1]) }}" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-file-circle-plus me-1"></i>Template Excel
             </a>
@@ -22,109 +25,12 @@
     @include('admin.users.partials.resume-card', ['summary' => $userSummary])
 
     @php
-        $shouldOpenCreateUserAccordion = old('user_form') === 'store';
+        $shouldOpenCreateUserModal = old('user_form') === 'store' && $errors->hasAny(['name', 'identity_number', 'role', 'kelas', 'phone']);
         $hasActiveUserFilters = filled($filters['search']) || filled($filters['role']) || filled($filters['kelas']);
     @endphp
 
     <div class="row g-3">
-        <div class="col-lg-4">
-            <div class="accordion user-create-accordion" id="userCreateAccordion">
-                <div class="accordion-item border-0">
-                    <h2 class="accordion-header" id="userCreateAccordionHeading">
-                        <button
-                            class="accordion-button user-create-accordion-button {{ $shouldOpenCreateUserAccordion ? '' : 'collapsed' }}"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#userCreateAccordionCollapse"
-                            aria-expanded="{{ $shouldOpenCreateUserAccordion ? 'true' : 'false' }}"
-                            aria-controls="userCreateAccordionCollapse"
-                        >
-                            <div class="d-flex align-items-center gap-3 w-100 pe-2">
-                                <span class="user-create-accordion-icon">
-                                    <i class="fa-solid fa-user-plus"></i>
-                                </span>
-                                <div class="flex-grow-1 text-start">
-                                    <div class="fw-bold">Tambah Pengguna</div>
-                                    <div class="small user-create-accordion-subtitle">Isi data admin, guru, atau siswa baru secara cepat.</div>
-                                </div>
-                                <span class="badge rounded-pill text-bg-light border user-create-accordion-badge">Form</span>
-                            </div>
-                        </button>
-                    </h2>
-                    <div
-                        id="userCreateAccordionCollapse"
-                        class="accordion-collapse collapse {{ $shouldOpenCreateUserAccordion ? 'show' : '' }}"
-                        aria-labelledby="userCreateAccordionHeading"
-                    >
-                        <div class="accordion-body user-create-accordion-body">
-                            <div class="user-create-accordion-note mb-3">
-                                <div class="fw-semibold mb-1">Data wajib diisi</div>
-                                <div class="small text-muted mb-0">Nama lengkap, NISN, role, kelas, dan nomor HP.</div>
-                            </div>
-
-                            @if($errors->hasAny(['name', 'identity_number', 'role', 'kelas', 'phone']))
-                                <div class="alert alert-danger small mb-3">
-                                    Periksa kembali data yang diisi. Field yang bermasalah akan ditandai merah.
-                                </div>
-                            @endif
-
-                            <form method="POST" action="{{ route('admin.users.store') }}" class="row g-3">
-                                @csrf
-                                <input type="hidden" name="user_form" value="store">
-                                <div class="col-12">
-                                    <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">NISN</label>
-                                    <input type="text" name="identity_number" class="form-control @error('identity_number') is-invalid @enderror" value="{{ old('identity_number') }}" required>
-                                    @error('identity_number')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Role <span class="text-danger">*</span></label>
-                                    <select name="role" class="form-select @error('role') is-invalid @enderror" required>
-                                        @foreach($roleOptions as $roleOption)
-                                            <option value="{{ $roleOption }}" @selected(old('role', 'student') === $roleOption)>{{ $roleOption }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('role')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Kelas <span class="text-danger">*</span></label>
-                                    <select name="kelas" class="form-select @error('kelas') is-invalid @enderror" required>
-                                        @foreach($kelasOptions as $kelasOption)
-                                            <option value="{{ $kelasOption }}" @selected(old('kelas', '-') === $kelasOption)>{{ $kelasOption }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('kelas')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">No. HP <span class="text-danger">*</span></label>
-                                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}" required>
-                                    @error('phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-12 d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">Simpan Pengguna</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <form method="GET" action="{{ route('admin.users.index') }}" class="row g-2">
@@ -401,6 +307,95 @@
         </div>
     </div>
 
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header user-modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">
+                        <i class="fa-solid fa-user-plus me-2"></i>Tambah Pengguna
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form method="POST" action="{{ route('admin.users.store') }}">
+                    @csrf
+                    <input type="hidden" name="user_form" value="store">
+                    <div class="modal-body">
+                        <div class="user-modal-note mb-3">
+                            <div class="fw-semibold mb-1">
+                                <i class="fa-solid fa-circle-info text-primary me-1"></i>Data wajib diisi:
+                            </div>
+                            <div class="small text-muted mb-0">Nama lengkap, NISN, role, kelas, dan nomor HP.</div>
+                        </div>
+
+                        @if($errors->hasAny(['name', 'identity_number', 'role', 'kelas', 'phone']))
+                            <div class="alert alert-danger small mb-3">
+                                Periksa kembali data yang diisi. Field yang bermasalah akan ditandai merah.
+                            </div>
+                        @endif
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="Nama lengkap pengguna" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">NISN / Identity Number <span class="text-danger">*</span></label>
+                                <input type="text" name="identity_number" class="form-control @error('identity_number') is-invalid @enderror" value="{{ old('identity_number') }}" placeholder="Nomor NISN atau identitas" required>
+                                @error('identity_number')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                                <select name="role" class="form-select @error('role') is-invalid @enderror" required>
+                                    @foreach($roleOptions as $roleOption)
+                                        <option value="{{ $roleOption }}" @selected(old('role', 'student') === $roleOption)>{{ $roleOption }}</option>
+                                    @endforeach
+                                </select>
+                                @error('role')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Kelas <span class="text-danger">*</span></label>
+                                <select name="kelas" class="form-select @error('kelas') is-invalid @enderror" required>
+                                    @foreach($kelasOptions as $kelasOption)
+                                        <option value="{{ $kelasOption }}" @selected(old('kelas', '-') === $kelasOption)>{{ $kelasOption }}</option>
+                                    @endforeach
+                                </select>
+                                @error('kelas')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">No. HP <span class="text-danger">*</span></label>
+                                <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}" placeholder="08xxxxxxxxxx" required>
+                                @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save me-1"></i>Simpan Pengguna
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="importUserExcelModal" tabindex="-1" aria-labelledby="importUserExcelModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
@@ -455,85 +450,39 @@
         document.addEventListener('DOMContentLoaded', function () {
             var shouldOpenImportUserModal = @json($errors->has('excel_file'));
 
-            if (!shouldOpenImportUserModal) {
-                return;
+            if (shouldOpenImportUserModal) {
+                var importUserExcelModalElement = document.getElementById('importUserExcelModal');
+
+                if (importUserExcelModalElement) {
+                    var importUserExcelModal = new bootstrap.Modal(importUserExcelModalElement);
+                    importUserExcelModal.show();
+                }
             }
 
-            var importUserExcelModalElement = document.getElementById('importUserExcelModal');
+            var shouldOpenCreateUserModal = @json($shouldOpenCreateUserModal);
 
-            if (!importUserExcelModalElement) {
-                return;
+            if (shouldOpenCreateUserModal) {
+                var createUserModalElement = document.getElementById('createUserModal');
+
+                if (createUserModalElement) {
+                    var createUserModal = new bootstrap.Modal(createUserModalElement);
+                    createUserModal.show();
+                }
             }
-
-            var importUserExcelModal = new bootstrap.Modal(importUserExcelModalElement);
-            importUserExcelModal.show();
         });
     </script>
 @endpush
 
 @push('styles')
     <style>
-        .user-create-accordion {
-            border-radius: 1.25rem;
-            overflow: hidden;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
-        }
-
-        .user-create-accordion .accordion-item {
-            border: 0;
-            background: transparent;
-        }
-
-        .user-create-accordion-button {
-            padding: 1rem 1.1rem;
-            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 55%, #0f172a 100%);
+        .user-modal-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
             color: #ffffff;
-            border: 0;
-            box-shadow: none;
         }
 
-        .user-create-accordion-button:not(.collapsed) {
-            color: #ffffff;
-            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 55%, #0f172a 100%);
-            box-shadow: none;
-        }
-
-        .user-create-accordion-button::after {
-            filter: brightness(0) invert(1);
-        }
-
-        .user-create-accordion-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.16);
-            color: #ffffff;
-            flex: 0 0 auto;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        }
-
-        .user-create-accordion-subtitle {
-            color: rgba(255, 255, 255, 0.82);
-        }
-
-        .user-create-accordion-badge {
-            color: #0f172a;
-            font-weight: 700;
-        }
-
-        .user-create-accordion-body {
-            padding: 1.15rem;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            border: 1px solid rgba(13, 110, 253, 0.10);
-            border-top: 0;
-        }
-
-        .user-create-accordion-note {
-            border-radius: 1rem;
-            padding: 0.95rem 1rem;
+        .user-modal-note {
+            border-radius: 0.85rem;
+            padding: 0.85rem 1rem;
             background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(13, 202, 240, 0.06));
             border: 1px solid rgba(13, 110, 253, 0.12);
         }
@@ -644,6 +593,12 @@
             position: relative;
             z-index: 1;
             margin-top: auto;
+        }
+
+        .user-summary-stats-row,
+        .row.g-2\.5 {
+            --bs-gutter-x: 0.65rem;
+            --bs-gutter-y: 0.65rem;
         }
 
         .user-summary-stat {
@@ -894,6 +849,16 @@
             .user-summary-overview {
                 flex: 1 1 100%;
             }
+
+            .user-summary-stats {
+                margin-top: 1.25rem;
+            }
+
+            .user-summary-stats-row,
+            .row.g-2\.5 {
+                --bs-gutter-x: 0.85rem;
+                --bs-gutter-y: 0.85rem;
+            }
         }
 
         @media (max-width: 767.98px) {
@@ -908,23 +873,23 @@
                 text-align: center;
                 max-width: 240px;
             }
+
+            .user-summary-stats {
+                margin-top: 1.15rem;
+            }
+
+            .user-summary-stats-row,
+            .row.g-2\.5 {
+                --bs-gutter-x: 0.75rem;
+                --bs-gutter-y: 0.85rem;
+            }
+
+            .user-summary-stat-col:not(:last-child) {
+                margin-bottom: 0.25rem;
+            }
         }
 
         @media (max-width: 575.98px) {
-            .user-create-accordion-button {
-                padding: 0.9rem 0.95rem;
-            }
-
-            .user-create-accordion-icon {
-                width: 2.6rem;
-                height: 2.6rem;
-                border-radius: 0.85rem;
-            }
-
-            .user-create-accordion-body {
-                padding: 1rem;
-            }
-
             .user-summary-overview,
             .user-summary-ring-panel {
                 padding: 0.9rem;
@@ -956,6 +921,16 @@
 
             .user-summary-slide-value {
                 font-size: 1.35rem;
+            }
+
+            .user-summary-stats {
+                margin-top: 1rem;
+            }
+
+            .user-summary-stats-row,
+            .row.g-2\.5 {
+                --bs-gutter-x: 0.5rem;
+                --bs-gutter-y: 0.75rem;
             }
         }
 
